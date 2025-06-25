@@ -7,7 +7,7 @@ services:
     restart: always
     environment:
       POSTGRES_DB: fishpot
-      POSTGRES_USER: postgres
+      POSTGRES_USER: postgres             ## todo esto despues vamos a tener que ponerlo en el .env!!!!! IMPORTANTEEE
       POSTGRES_PASSWORD: postgres
     ports:
       - "5432:5432"

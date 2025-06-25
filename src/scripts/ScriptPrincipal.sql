@@ -37,7 +37,12 @@ CREATE TABLE Carnada (
     descripcion VARCHAR(255)
 );
 
---  Spot 
+--  Spot
+
+-- antes de crear hay que ejecutar esto 
+CREATE EXTENSION IF NOT EXISTS postgis;
+
+
 CREATE TABLE Spot (
     id VARCHAR(255) PRIMARY KEY,
     id_usuario VARCHAR(255),
@@ -99,3 +104,4 @@ CREATE TABLE SolicitudDeDato (
     FOREIGN KEY (id_spot) REFERENCES Spot(id),
     FOREIGN KEY (id_usuario) REFERENCES Usuario(id)
 );
+
