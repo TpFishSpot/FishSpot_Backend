@@ -1,5 +1,12 @@
 // src/models/spot.model.ts
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+} from 'sequelize-typescript';
+import { EstadoSpot } from './EstadoSpot';
 
 @Table({ tableName: 'Spot' })
 export class Spot extends Model<Spot> {
@@ -7,28 +14,30 @@ export class Spot extends Model<Spot> {
   declare id: string;
 
   @Column
-  nombre: string;
+  declare nombre: string;
 
-  @Column({ type: DataType.ENUM('Esperando','Aceptado','Rechazado','Inactivo') })
-  estado: string;
+  @Column({
+    type: DataType.ENUM('Esperando', 'Aceptado', 'Rechazado', 'Inactivo'),
+  })
+  declare estado: EstadoSpot;
 
   @Column
-  descripcion: string;
+  declare descripcion: string;
 
   @Column({ type: DataType.GEOGRAPHY('POINT', 4326) })
-  ubicacion: object;
+  declare ubicacion: object;
 
   @Column
-  fechaPublicacion: Date;
+  declare fechaPublicacion: Date;
 
   @Column
-  fechaActualizacion: Date;
-
-  @ForeignKey(() => Spot)
-  @Column
-  idUsuario: string;
+  declare fechaActualizacion: Date;
 
   @ForeignKey(() => Spot)
   @Column
-  idUsuarioActualizo: string;
+  declare idUsuario: string;
+
+  @ForeignKey(() => Spot)
+  @Column
+  declare idUsuarioActualizo: string;
 }

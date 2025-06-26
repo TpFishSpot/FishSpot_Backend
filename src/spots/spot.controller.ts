@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Body, Controller, Get, Post } from '@nestjs/common';
 import { SpotService } from './spot.service';
+import { Spot } from 'src/models/Spot';
 
 @Controller('spot')
 export class SpotController {
@@ -8,5 +9,10 @@ export class SpotController {
   @Get()
   findAll() {
     return this.spotService.findAll();
+  }
+
+  @Post()
+  async ageregarSpot(@Body() spotDto: Spot) {
+    return await this.spotService.agregarSpot(spotDto);
   }
 }
