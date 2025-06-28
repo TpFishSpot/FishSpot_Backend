@@ -13,6 +13,9 @@ export class SpotService {
   async findAll(): Promise<Spot[]> {
     return this.spotRepository.findAll();
   }
+  async find(id: string): Promise<Spot> {
+   return await this.spotRepository.findOne(id)
+  }
 
   async agregarSpot(spotDto: Spot): Promise<Spot> {
     return await this.spotRepository.create(spotDto);
