@@ -1,34 +1,60 @@
-// src/models/spot.model.ts
-import { Table, Column, Model, DataType, ForeignKey } from 'sequelize-typescript';
+import {
+  Table,
+  Column,
+  Model,
+  DataType,
+  ForeignKey,
+} from 'sequelize-typescript';
+import { EstadoSpot } from './EstadoSpot';
+import { Usuario } from './Usuario';
+import { Optional } from 'sequelize';
 
-@Table({ tableName: 'Spot' })
-export class Spot extends Model<Spot> {
+
+export interface SpotProps{
+  id: string;
+  nombre: string;
+  descripcion: string;
+  ubicacion: object;
+  estado: EstadoSpot;
+  fechaPublicacion: Date;
+  fechaActualizacion: Date;
+  idUsuario: string;
+  idUsuarioActualizo: string;
+}
+
+export interface SpotCreationProps extends Optional<SpotProps, 'id'> {}
+
+
+@Table({ tableName: 'Spot', timestamps: false })
+export class Spot extends Model<SpotProps, SpotCreationProps> {
   @Column({ primaryKey: true, type: DataType.STRING })
   declare id: string;
 
   @Column
-  nombre: string;
+  declare nombre: string;
 
-  @Column({ type: DataType.ENUM('Esperando','Aceptado','Rechazado','Inactivo') })
-  estado: string;
+  @Column({
+    type: DataType.ENUM('Esperando', 'Aceptado', 'Rechazado', 'Inactivo'), field: 'estado'
+  })
+  declare estado: EstadoSpot;
 
   @Column
-  descripcion: string;
+  declare descripcion: string;
 
   @Column({ type: DataType.GEOGRAPHY('POINT', 4326) })
-  ubicacion: object;
+  declare ubicacion: object;
 
   @Column
-  fechaPublicacion: Date;
+  declare fechaPublicacion: Date;
 
   @Column
-  fechaActualizacion: Date;
+  declare fechaActualizacion: Date;
 
-  @ForeignKey(() => Spot)
+  @ForeignKey(() => Usuario)
   @Column
-  idUsuario: string;
+  declare idUsuario: string;
 
-  @ForeignKey(() => Spot)
+  @ForeignKey(() => Usuario)
   @Column
-  idUsuarioActualizo: string;
+  declare idUsuarioActualizo: string;
 }
