@@ -1,107 +1,186 @@
+DROP TABLE IF EXISTS "Comentario" CASCADE;
+DROP TABLE IF EXISTS "SolicitudDeDato" CASCADE;
+DROP TABLE IF EXISTS "SpotCarnadaEspecie" CASCADE;
+DROP TABLE IF EXISTS "SpotEspecie" CASCADE;
+DROP TABLE IF EXISTS "SpotTipoPesca" CASCADE;
+DROP TABLE IF EXISTS "Spot" CASCADE;
+DROP TABLE IF EXISTS "NombreComunEspecie" CASCADE;
+DROP TABLE IF EXISTS "Especie" CASCADE;
+DROP TABLE IF EXISTS "Carnada" CASCADE;
+DROP TABLE IF EXISTS "Usuario" CASCADE;
+DROP TABLE IF EXISTS "TipoPesca" CASCADE;
 
-CREATE TYPE NivelPescador AS ENUM ('Principiante','Aficionado','Intermedio','Avanzado','Experto','Profesional');
-CREATE TYPE EstadoSpot AS ENUM ('Esperando','Aceptado','Rechazado','Inactivo');
-CREATE TYPE TipoCarnada AS ENUM ('ArtificialBlando','ArtificialDuro','CarnadaViva','CarnadaMuerta','NaturalNoViva','MoscaArtificial','Otros');
+DROP TYPE IF EXISTS "NivelPescador" CASCADE;
+DROP TYPE IF EXISTS "EstadoSpot" CASCADE;
+DROP TYPE IF EXISTS "TipoCarnada" CASCADE;
 
- 
-CREATE TABLE Tipo_Pesca (
-    id VARCHAR(255) PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
-    descripcion VARCHAR(255) NOT NULL
+
+CREATE TYPE "NivelPescador" AS ENUM (
+  'Principiante','Aficionado','Intermedio','Avanzado','Experto','Profesional'
 );
 
-CREATE TABLE Usuario (
-    id VARCHAR(255) PRIMARY KEY,
-    nombre VARCHAR(50) NOT NULL,
-    nivel_pescador NivelPescador,
-    email VARCHAR(50) NOT NULL
+CREATE TYPE "EstadoSpot" AS ENUM (
+  'Esperando','Aceptado','Rechazado','Inactivo'
 );
 
-CREATE TABLE Nombre_Especie (
-    id VARCHAR(255) PRIMARY KEY,
-    nombre VARCHAR(255) NOT NULL
+CREATE TYPE "TipoCarnada" AS ENUM (
+  'ArtificialBlando','ArtificialDuro','CarnadaViva','CarnadaMuerta','NaturalNoViva','MoscaArtificial','Otros'
 );
 
-CREATE TABLE Especie (
-    id VARCHAR(255) PRIMARY KEY,
-    id_nombre_especie VARCHAR(255),
-    nombre_cientifico VARCHAR(255),
-    descripcion VARCHAR(255),
-    FOREIGN KEY (id_nombre_especie) REFERENCES Nombre_Especie(id)
+CREATE TABLE "TipoPesca" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "nombre" VARCHAR(50) NOT NULL,
+  "descripcion" VARCHAR(255) NOT NULL
 );
 
-CREATE TABLE Carnada (
-    id VARCHAR(255) PRIMARY KEY,
-    nombre VARCHAR(255),
-    tipo_carnada TipoCarnada,
-    descripcion VARCHAR(255)
+CREATE TABLE "Usuario" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "nombre" VARCHAR(50) NOT NULL,
+  "nivelPescador" "NivelPescador",
+  "email" VARCHAR(50) NOT NULL
 );
 
---  Spot
+CREATE TABLE "Especie" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "nombreCientifico" VARCHAR(255),
+  "descripcion" VARCHAR(255)
+);
 
--- antes de crear hay que ejecutar esto 
+CREATE TABLE "NombreComunEspecie" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idEspecie" VARCHAR(255),
+  "nombre" VARCHAR(255) NOT NULL,
+  FOREIGN KEY ("idEspecie") REFERENCES "Especie"("id")
+);
+
+CREATE TABLE "Carnada" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "nombre" VARCHAR(255),
+  "tipoCarnada" "TipoCarnada",
+  "descripcion" VARCHAR(255)
+);
+
 CREATE EXTENSION IF NOT EXISTS postgis;
 
-
-CREATE TABLE Spot (
-    id VARCHAR(255) PRIMARY KEY,
-    id_usuario VARCHAR(255),
-    id_usuario_actualizo VARCHAR(255),
-    nombre VARCHAR(255),
-    estado EstadoSpot,
-    descripcion VARCHAR(255),
-    ubicacion GEOGRAPHY(Point, 4326),
-    fecha_publicacion DATE,
-    fecha_actualizacion DATE,
-    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
-    FOREIGN KEY (id_usuario_actualizo) REFERENCES Usuario(id)
+CREATE TABLE "Spot" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idUsuario" VARCHAR(255),
+  "idUsuarioActualizo" VARCHAR(255),
+  "nombre" VARCHAR(255),
+  "estado" "EstadoSpot",
+  "descripcion" VARCHAR(255),
+  "ubicacion" GEOGRAPHY(Point, 4326),
+  "fechaPublicacion" DATE,
+  "fechaActualizacion" DATE,
+  FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id"),
+  FOREIGN KEY ("idUsuarioActualizo") REFERENCES "Usuario"("id")
 );
 
-CREATE TABLE SpotTipoPesca (
-    id VARCHAR(255) PRIMARY KEY,
-    id_spot VARCHAR(255),
-    id_tipo_pesca VARCHAR(255),
-    FOREIGN KEY (id_spot) REFERENCES Spot(id),
-    FOREIGN KEY (id_tipo_pesca) REFERENCES Tipo_Pesca(id)
+CREATE TABLE "SpotTipoPesca" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idSpot" VARCHAR(255),
+  "idTipoPesca" VARCHAR(255),
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id"),
+  FOREIGN KEY ("idTipoPesca") REFERENCES "TipoPesca"("id")
 );
 
-CREATE TABLE SpotEspecie (
-    id VARCHAR(255) PRIMARY KEY,
-    id_spot VARCHAR(255),
-    id_especie VARCHAR(255),
-    FOREIGN KEY (id_spot) REFERENCES Spot(id),
-    FOREIGN KEY (id_especie) REFERENCES Especie(id)
+CREATE TABLE "SpotEspecie" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idSpot" VARCHAR(255),
+  "idEspecie" VARCHAR(255),
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id"),
+  FOREIGN KEY ("idEspecie") REFERENCES "Especie"("id")
 );
 
-CREATE TABLE SpotCarnadaEspecie (
-    id VARCHAR(255) PRIMARY KEY,
-    id_spot VARCHAR(255),
-    id_especie VARCHAR(255),
-    id_carnada VARCHAR(255),
-    FOREIGN KEY (id_spot) REFERENCES Spot(id),
-    FOREIGN KEY (id_especie) REFERENCES Especie(id),
-    FOREIGN KEY (id_carnada) REFERENCES Carnada(id)
+CREATE TABLE "SpotCarnadaEspecie" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idSpot" VARCHAR(255),
+  "idEspecie" VARCHAR(255),
+  "idCarnada" VARCHAR(255),
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id"),
+  FOREIGN KEY ("idEspecie") REFERENCES "Especie"("id"),
+  FOREIGN KEY ("idCarnada") REFERENCES "Carnada"("id")
 );
 
-
-CREATE TABLE Comentario (
-    id VARCHAR(255) PRIMARY KEY,
-    id_usuario VARCHAR(255),
-    id_spot VARCHAR(255),
-    contenido VARCHAR(255),
-    fecha DATE,
-    FOREIGN KEY (id_usuario) REFERENCES Usuario(id),
-    FOREIGN KEY (id_spot) REFERENCES Spot(id)
+CREATE TABLE "Comentario" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idUsuario" VARCHAR(255),
+  "idSpot" VARCHAR(255),
+  "contenido" VARCHAR(255),
+  "fecha" DATE,
+  FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id"),
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id")
 );
 
-CREATE TABLE SolicitudDeDato (
-    id VARCHAR(255) PRIMARY KEY,
-    id_spot VARCHAR(255),
-    id_usuario VARCHAR(255),
-    nombre_comun VARCHAR(255),
-    nombre_cientifico VARCHAR(255),
-    descripcion VARCHAR(255),
-    FOREIGN KEY (id_spot) REFERENCES Spot(id),
-    FOREIGN KEY (id_usuario) REFERENCES Usuario(id)
+CREATE TABLE "SolicitudDeDato" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idSpot" VARCHAR(255),
+  "idUsuario" VARCHAR(255),
+  "idEspecie" VARCHAR(255),
+  "nombreCientifico" VARCHAR(255),
+  "descripcion" VARCHAR(255),
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id"),
+  FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id"),
+  FOREIGN KEY ("idEspecie") REFERENCES "Especie"("id")
 );
 
+-- DATOS DE PRUEBA
+
+INSERT INTO "Usuario" ("id", "nombre", "nivelPescador", "email") VALUES
+  ('usuario1', 'Carlos Tarucha', 'Avanzado', 'carlos@example.com'),
+  ('usuario2', 'Lucía Señuelera', 'Experto', 'lucia@example.com');
+
+INSERT INTO "TipoPesca" ("id", "nombre", "descripcion") VALUES
+  ('tp1', 'Spinning', 'Pesca con señuelos artificiales usando caña y reel.');
+
+INSERT INTO "Especie" ("id", "nombreCientifico", "descripcion") VALUES
+  ('es1', 'Hoplias malabaricus', 'Depredador de aguas calmas y cálidas.');
+
+INSERT INTO "NombreComunEspecie" ("id", "idEspecie", "nombre") VALUES
+  ('nc1', 'es1', 'Tararira'),
+  ('nc2', 'es1', 'Tarucha'),
+  ('nc3', 'es1', 'Dientudo'),
+  ('nc4', 'es1', 'Lobito'),
+  ('nc5', 'es1', 'Cabeza amarga'),
+  ('nc6', 'es1', 'Hoplias'),
+  ('nc7', 'es1', 'Trucha criolla'),
+  ('nc8', 'es1', 'Moncholo loco'),
+  ('nc9', 'es1', 'Tigre de agua dulce');
+
+INSERT INTO "Carnada" ("id", "nombre", "tipoCarnada", "descripcion") VALUES
+  ('c1', 'Señuelo rana', 'ArtificialBlando', 'Señuelo blando en forma de rana.');
+
+INSERT INTO "Spot" (
+  "id", "idUsuario", "idUsuarioActualizo", "nombre", "estado", "descripcion", "ubicacion", "fechaPublicacion", "fechaActualizacion"
+) VALUES (
+  'SpotSecreto',
+  'usuario1',
+  'usuario2',
+  'Desembocadura del arrollito',
+  'Esperando',
+  'Un lugar excelente para pescar tarariras con señuelos, pero solo para entendidos.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-58.500998126994794, -35.75352487481563]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE
+);
+
+INSERT INTO "SpotTipoPesca" ("id", "idSpot", "idTipoPesca") VALUES
+  ('stp1', 'SpotSecreto', 'tp1');
+
+INSERT INTO "SpotEspecie" ("id", "idSpot", "idEspecie") VALUES
+  ('se1', 'SpotSecreto', 'es1');
+
+INSERT INTO "SpotCarnadaEspecie" ("id", "idSpot", "idEspecie", "idCarnada") VALUES
+  ('sce1', 'SpotSecreto', 'es1', 'c1');
+
+INSERT INTO "Comentario" ("id", "idUsuario", "idSpot", "contenido", "fecha") VALUES
+  ('com1', 'usuario1', 'SpotSecreto', 'Fui hace poco y saqué dos tarus hermosas.', CURRENT_DATE);
+
+INSERT INTO "SolicitudDeDato" (
+  "id", "idSpot", "idUsuario", "idEspecie", "nombreCientifico", "descripcion"
+) VALUES (
+  'sol1', 'SpotSecreto', 'usuario2', 'es1', 'Hoplias lacerdae', 'Vi otra especie parecida, se mueve más lento.'
+);

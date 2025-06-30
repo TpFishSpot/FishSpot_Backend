@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Spot } from 'src/models/Spot';
+import { Spot, SpotCreationProps } from 'src/models/Spot';
 
 @Injectable()
 export class SpotRepository {
@@ -13,7 +13,7 @@ export class SpotRepository {
     return this.spotModel.findAll();
   }
 
-  async create(spot: Spot): Promise<Spot> {
+  async create(spot: SpotCreationProps): Promise<Spot> {
     return this.spotModel.create(spot);
   }
 }
