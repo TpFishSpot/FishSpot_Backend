@@ -3,8 +3,8 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Spot } from 'src/models/Spot';
 import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
-import { EstadoSpot } from 'src/models/EstadoSpot';
 import { v4 as uuidv4 } from 'uuid';
+import { SpotEspecie } from 'src/models/SpotEspecie';
 
 @Injectable()
 export class SpotService {
@@ -32,5 +32,9 @@ export class SpotService {
       idUsuario: spotDto.idUsuario,
       idUsuarioActualizo: spotDto.idUsuario,
     });
+  }
+
+  async find(id: string): Promise<Spot> {
+   return await this.spotRepository.findOne(id)
   }
 }
