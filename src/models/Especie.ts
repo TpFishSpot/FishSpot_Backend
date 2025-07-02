@@ -1,8 +1,17 @@
+import { Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
 import { NombreEspecie } from "./NombreEspecie";
 
-export class Espiece{
-    idEspecie        : string;
-    nombreComun      :  NombreEspecie[];
-    nombreCientifico : string;
-    descripcion      : string;
+@Table({ tableName: 'Especie', timestamps: false })
+export class Especie extends Model<Especie>{
+    @Column({field: 'id', primaryKey: true, type: DataType.STRING })
+    declare idEspecie: string;
+
+    @Column
+    declare nombreCientifico: string;
+
+    @Column
+    declare descripcion: string;
+
+    @HasMany(() => NombreEspecie)
+    declare nombresComunes: NombreEspecie[];
 }

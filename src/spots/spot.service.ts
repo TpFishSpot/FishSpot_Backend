@@ -3,13 +3,13 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Spot } from 'src/models/Spot';
 import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
+import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { v4 as uuidv4 } from 'uuid';
 import { SpotEspecie } from 'src/models/SpotEspecie';
 
 @Injectable()
 export class SpotService {
   constructor(
-    @InjectModel(Spot)
     private readonly spotRepository: SpotRepository,
   ) {}
 
@@ -36,5 +36,9 @@ export class SpotService {
 
   async find(id: string): Promise<Spot> {
    return await this.spotRepository.findOne(id)
+  }
+
+  async findAllEspecies(id: string): Promise<EspecieConNombreComun[]> {
+    return await this.spotRepository.obtenerEspeciesPorSpot(id);
   }
 }
