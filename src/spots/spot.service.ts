@@ -9,7 +9,6 @@ import { SpotEspecie } from 'src/models/SpotEspecie';
 @Injectable()
 export class SpotService {
   constructor(
-    @InjectModel(Spot)
     private readonly spotRepository: SpotRepository,
   ) {}
 
@@ -17,7 +16,7 @@ export class SpotService {
     return this.spotRepository.findAll();
   }
 
-  async agregarSpot(spotDto: SpotDto): Promise<Spot> {
+  async agregarSpot(spotDto: SpotDto, imagenPath: string | undefined ): Promise<Spot> {
     const hoy = new Date();
     const soloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
 
@@ -31,6 +30,7 @@ export class SpotService {
       fechaActualizacion: soloFecha,
       idUsuario: spotDto.idUsuario,
       idUsuarioActualizo: spotDto.idUsuario,
+      imagenPortada: imagenPath || undefined,
     });
   }
 
