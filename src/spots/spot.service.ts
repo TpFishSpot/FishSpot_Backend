@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Spot } from 'src/models/Spot';
 import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
-import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { v4 as uuidv4 } from 'uuid';
 import { SpotEspecie } from 'src/models/SpotEspecie';
 
@@ -17,7 +16,7 @@ export class SpotService {
     return this.spotRepository.findAll();
   }
 
-  async agregarSpot(spotDto: SpotDto): Promise<Spot> {
+  async agregarSpot(spotDto: SpotDto, imagenPath: string | undefined ): Promise<Spot> {
     const hoy = new Date();
     const soloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
 
@@ -31,13 +30,14 @@ export class SpotService {
       fechaActualizacion: soloFecha,
       idUsuario: spotDto.idUsuario,
       idUsuarioActualizo: spotDto.idUsuario,
+      imagenPortada: imagenPath || undefined,
     });
   }
 
   async find(id: string): Promise<Spot> {
    return await this.spotRepository.findOne(id)
   }
-
+  
   async findAllEspecies(id: string): Promise<EspecieConNombreComun[]> {
     return await this.spotRepository.obtenerEspeciesPorSpot(id);
   }

@@ -20,6 +20,7 @@ export interface SpotProps{
   fechaActualizacion: Date;
   idUsuario: string;
   idUsuarioActualizo: string;
+  imagenPortada?: string;
 }
 
 export interface SpotCreationProps extends Optional<SpotProps, 'id'> {}
@@ -57,4 +58,10 @@ export class Spot extends Model<SpotProps, SpotCreationProps> {
   @ForeignKey(() => Usuario)
   @Column
   declare idUsuarioActualizo: string;
+
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare imagenPortada?: string;
 }
