@@ -4,9 +4,19 @@ import { Spot } from '../models/Spot';
 import { SpotController } from './spot.controller';
 import { SpotRepository } from './spot.repository';
 import { SpotService } from './spot.service';
+import { SpotEspecie } from 'src/models/SpotEspecie';
+import { Especie } from 'src/models/Especie';
+import { NombreEspecie } from 'src/models/NombreEspecie';
 
 @Module({
-  imports: [SequelizeModule.forFeature([Spot])],
+  imports: [
+    SequelizeModule.forFeature([
+      Spot,
+      SpotEspecie,
+      Especie,
+      NombreEspecie,
+    ]),
+  ],
   providers: [SpotService, SpotRepository],
   controllers: [SpotController],
 })

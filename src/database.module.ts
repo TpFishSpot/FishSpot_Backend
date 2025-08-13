@@ -17,9 +17,9 @@ import { Sequelize } from 'sequelize-typescript';
         password: configService.get<string>('DATABASE_PASSWORD'),
         database: configService.get<string>('DATABASE_NAME'),
         //  models: [User], // aca van los modulos de entidades
-        synchronize: true, //  esto en produccion tiene que quedar facle
+        synchronize: false, //  esto en produccion tiene que quedar facle
         autoLoadModels: true,
-        logging: false, // hay que setearlo como verdadero para tener los zequelice logs
+        logging: console.log, // hay que setearlo como verdadero para tener los zequelice logs
       }),
     }),
   ],

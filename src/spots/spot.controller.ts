@@ -66,4 +66,9 @@ export class SpotController {
 
     return this.spotService.agregarSpot(spotDto, imagenPath);
   }
+  
+  @Get('/:id/especies')
+  async findAllEspecies(@Param('id') id: string): Promise<EspecieConNombreComun[]> {
+    return await this.spotService.findAllEspecies(id);
+  }
 }

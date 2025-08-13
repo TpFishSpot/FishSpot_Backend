@@ -37,4 +37,8 @@ export class SpotService {
   async find(id: string): Promise<Spot> {
    return await this.spotRepository.findOne(id)
   }
+  
+  async findAllEspecies(id: string): Promise<EspecieConNombreComun[]> {
+    return await this.spotRepository.obtenerEspeciesPorSpot(id);
+  }
 }
