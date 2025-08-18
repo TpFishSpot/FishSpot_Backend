@@ -18,6 +18,7 @@ import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
+import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 
 @Controller('spot')
 export class SpotController {
@@ -69,4 +70,9 @@ export class SpotController {
   async findAllEspecies(@Param('id') id: string): Promise<EspecieConNombreComun[]> {
     return await this.spotService.findAllEspecies(id);
   }
+  @Get('/:id/tipoPesca')
+  async findAllTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]>{
+    return await this.spotService.findAllTipoPesca(id);
+  }
+
 }

@@ -7,6 +7,8 @@ import { SpotService } from './spot.service';
 import { SpotEspecie } from 'src/models/SpotEspecie';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
+import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
+import { TipoPesca } from 'src/models/TipoPesca';
 
 @Module({
   imports: [
@@ -15,6 +17,8 @@ import { NombreEspecie } from 'src/models/NombreEspecie';
       SpotEspecie,
       Especie,
       NombreEspecie,
+      SpotTipoPesca, 
+      TipoPesca
     ]),
   ],
   providers: [SpotService, SpotRepository],

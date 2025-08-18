@@ -4,6 +4,7 @@ import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
 import { v4 as uuidv4 } from 'uuid';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
+import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 
 @Injectable()
 export class SpotService {
@@ -39,5 +40,8 @@ export class SpotService {
   
   async findAllEspecies(id: string): Promise<EspecieConNombreComun[]> {
     return await this.spotRepository.obtenerEspeciesPorSpot(id);
+  }
+  async findAllTipoPesca(id: string): Promise<SpotTipoPesca[]> {
+  return this.spotRepository.obtenerTipoPesca(id);
   }
 }
