@@ -1,10 +1,9 @@
-
 export enum TipoCarnada { 
-  ArtificialBlando,
-  ArtificialDuro ,
-  CarnadaViva ,
-  CarnadaMuerta ,
-  NaturalNoViva , // ejemplo: masa, pan, preparados, harinados, cebos etc
-  MoscaArtificial ,
-  Otros
+  ArtificialBlando = 'ArtificialBlando',
+  ArtificialDuro = 'ArtificialDuro',
+  CarnadaViva = 'CarnadaViva',
+  CarnadaMuerta = 'CarnadaMuerta',
+  NaturalNoViva = 'NaturalNoViva', // ejemplo: masa, pan, preparados, harinados, cebos etc
+  MoscaArtificial = 'MoscaArtificial',
+  Otros = 'Otros'
 }

@@ -184,3 +184,6 @@ INSERT INTO "SolicitudDeDato" (
 ) VALUES (
   'sol1', 'SpotSecreto', 'usuario2', 'es1', 'Hoplias lacerdae', 'Vi otra especie parecida, se mueve más lento.'
 );
+
+ALTER TABLE "Spot"
+ADD COLUMN "imagenPortada" VARCHAR(255);
