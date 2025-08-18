@@ -21,4 +21,5 @@ export class SpotEspecie extends Model<SpotEspecie> {
 
     @BelongsTo(() => Especie)
     declare especie: Especie;
+    
 }

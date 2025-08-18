@@ -12,6 +12,9 @@ export class Especie extends Model<Especie>{
     @Column
     declare descripcion: string;
 
+    @Column({ allowNull: true })
+    declare imagen?: string;
+
     @HasMany(() => NombreEspecie)
     declare nombresComunes: NombreEspecie[];
 }

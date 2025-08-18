@@ -1,10 +1,9 @@
 import { Injectable } from '@nestjs/common';
-import { InjectModel } from '@nestjs/sequelize';
 import { Spot } from 'src/models/Spot';
 import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
 import { v4 as uuidv4 } from 'uuid';
-import { SpotEspecie } from 'src/models/SpotEspecie';
+import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 
 @Injectable()
 export class SpotService {
