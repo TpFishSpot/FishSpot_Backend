@@ -17,21 +17,19 @@ import { Spot } from 'src/models/Spot';
 import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
+import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 
 @Controller('spot')
 export class SpotController {
   constructor(private readonly spotService: SpotService) {}
-
   @Get()
   findAll() {
     return this.spotService.findAll();
   }
-
   @Get(':id')
   async find(@Param('id') id: string): Promise<Spot> {
     return this.spotService.find(id);
   }
-
   @Post()
   @UseInterceptors(
     FileInterceptor('imagen', {

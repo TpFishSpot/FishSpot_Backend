@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
-import { join } from 'path';
+import { join, resolve } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
@@ -16,9 +16,10 @@ async function bootstrap() {
     origin: 'http://localhost:5173', 
     credentials: true,
   });
-  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
-    prefix: '/uploads/',
+  app.useStaticAssets(resolve(process.cwd(), 'uploads'), {
+  prefix: '/uploads/',
   });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,

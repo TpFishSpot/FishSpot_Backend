@@ -184,3 +184,35 @@ INSERT INTO "SolicitudDeDato" (
 ) VALUES (
   'sol1', 'SpotSecreto', 'usuario2', 'es1', 'Hoplias lacerdae', 'Vi otra especie parecida, se mueve más lento.'
 );
+
+
+
+ALTER TABLE "Spot"
+ADD COLUMN "imagenPortada" VARCHAR(255);
+
+
+ALTER TABLE "Especie"
+ADD COLUMN "imagen" VARCHAR(255);
+
+UPDATE "Especie"
+SET "imagen" = 'uploads/tararira.png'
+WHERE "id" = 'es1';
+
+
+-- 1. Nuevas especies
+INSERT INTO "Especie" ("id", "nombreCientifico", "descripcion", "imagen") VALUES
+('es2', 'Odontesthes bonariensis', 'Pez de agua dulce típico de ríos y lagunas.', 'uploads/pejerrey.png'),
+('es3', 'Cyprinus carpio', 'Pez de cuerpo robusto y escamas grandes, muy común en estanques y ríos lentos.', 'uploads/carpa_comun.png'),
+('es4', 'Ictalurus punctatus', 'Bagre de agua dulce, de hábitos nocturnos.', 'uploads/bagre.png');
+
+-- 2. Nombres comunes
+INSERT INTO "NombreComunEspecie" ("id", "idEspecie", "nombre") VALUES
+('nc10', 'es2', 'Pejerrey'),
+('nc11', 'es3', 'Carpa común'),
+('nc12', 'es4', 'Bagre');
+
+-- 3. Asociar al SpotSecreto
+INSERT INTO "SpotEspecie" ("id", "idSpot", "idEspecie") VALUES
+('se2', 'SpotSecreto', 'es2'),
+('se3', 'SpotSecreto', 'es3'),
+('se4', 'SpotSecreto', 'es4');
