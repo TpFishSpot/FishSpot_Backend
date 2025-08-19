@@ -18,6 +18,7 @@ import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
+import { Carnada } from 'src/models/Carnada';
 
 @Controller('spot')
 export class SpotController {
@@ -68,5 +69,10 @@ export class SpotController {
   @Get('/:id/especies')
   async findAllEspecies(@Param('id') id: string): Promise<EspecieConNombreComun[]> {
     return await this.spotService.findAllEspecies(id);
+  }
+
+  @Get(':id/carnadas')
+  async getCarnadasByEspecies(@Param('id') idSpot: string): Promise<Record<string, Carnada[]>> {
+    return this.spotService.findCarnadasByEspecies(idSpot);
   }
 }

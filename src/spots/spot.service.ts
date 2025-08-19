@@ -4,11 +4,13 @@ import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
 import { v4 as uuidv4 } from 'uuid';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
+import { EspecieService } from 'src/especie/especie.service';
 
 @Injectable()
 export class SpotService {
   constructor(
     private readonly spotRepository: SpotRepository,
+    private readonly especieService: EspecieService,
   ) {}
 
   async findAll(): Promise<Spot[]> {
@@ -39,5 +41,10 @@ export class SpotService {
   
   async findAllEspecies(id: string): Promise<EspecieConNombreComun[]> {
     return await this.spotRepository.obtenerEspeciesPorSpot(id);
+  }
+
+  async findCarnadasByEspecies(id: string){
+    const idsEspecies: string[] = (await this.findAllEspecies(id)).map(( e => e.id))
+    return this.especieService.findCarnadasByEspecies(idsEspecies);
   }
 }

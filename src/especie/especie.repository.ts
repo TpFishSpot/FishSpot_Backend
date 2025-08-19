@@ -1,5 +1,6 @@
 import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
+import { Op } from 'sequelize';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { Carnada } from 'src/models/Carnada';
 import { Especie } from 'src/models/Especie';
@@ -48,4 +49,33 @@ export class EspecieRepository {
       nombre_comun: especie.nombresComunes?.map(n => n.nombre) || [], 
     };
   }
+
+  async findCarnadasByEspecies(idsEspecies: string[]): Promise<Record<string, Carnada[]>> {
+    const registrosCarnadas = await this.spotCarnadaEspecieModel.findAll({
+      where: { idEspecie: { [Op.in]: idsEspecies } },
+      include: [Carnada],
+    });
+
+    const carnadasPorEspecie: Record<string, Carnada[]> = {};
+
+    for (const registro of registrosCarnadas) {
+      const idEspecieActual = registro.idEspecie;
+      const carnadaActual = registro.carnada;
+
+      if (!carnadasPorEspecie[idEspecieActual]) {
+        carnadasPorEspecie[idEspecieActual] = [];
+      }
+
+      const yaExiste = carnadasPorEspecie[idEspecieActual].some(
+        c => c.idCarnada === carnadaActual.idCarnada
+      );
+
+      if (!yaExiste) {
+        carnadasPorEspecie[idEspecieActual].push(carnadaActual);
+      }
+    }
+
+    return carnadasPorEspecie;
+  }
+
 }

@@ -14,4 +14,7 @@ export class EspecieService {
   async findOne(idEspecie:string): Promise<EspecieConNombreComun>{
     return this.especieRepository.findOne(idEspecie);
   }
+  async findCarnadasByEspecies(ids: string[]): Promise<Record<string, Carnada[]>> {
+    return this.especieRepository.findCarnadasByEspecies(ids);
+  }
 }
