@@ -197,6 +197,9 @@ UPDATE "Especie"
 SET "imagen" = 'uploads/tararira.png'
 WHERE "id" = 'es1';
 
+UPDATE "Spot"
+SET "imagenPortada" = 'uploads/taruchini.png'
+WHERE "id" = 'SpotSecreto';
 
 -- 1. Nuevas especies
 INSERT INTO "Especie" ("id", "nombreCientifico", "descripcion", "imagen") VALUES
