@@ -18,19 +18,23 @@ import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
+import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 import { Carnada } from 'src/models/Carnada';
 
 @Controller('spot')
 export class SpotController {
   constructor(private readonly spotService: SpotService) {}
+
   @Get()
   findAll() {
     return this.spotService.findAll();
   }
+
   @Get(':id')
   async find(@Param('id') id: string): Promise<Spot> {
     return this.spotService.find(id);
   }
+
   @Post()
   @UseInterceptors(
     FileInterceptor('imagen', {
@@ -44,7 +48,6 @@ export class SpotController {
     }),
   )
   async crearSpot(@UploadedFile() imagen: Express.Multer.File, @Body() rawBody: any) {
-
     if (typeof rawBody.ubicacion === 'string') {
       try {
         rawBody.ubicacion = JSON.parse(rawBody.ubicacion);
@@ -53,9 +56,11 @@ export class SpotController {
       }
     }
 
-    const spotDto = plainToInstance(SpotDto, rawBody);
+    if (!rawBody.idUsuarioActualizo) {
+      rawBody.idUsuarioActualizo = rawBody.idUsuario;
+    }
 
- 
+    const spotDto = plainToInstance(SpotDto, rawBody);
     const errors = await validate(spotDto);
     if (errors.length > 0) {
       throw new BadRequestException(errors);
@@ -65,14 +70,19 @@ export class SpotController {
 
     return this.spotService.agregarSpot(spotDto, imagenPath);
   }
-  
+
   @Get('/:id/especies')
   async findAllEspecies(@Param('id') id: string): Promise<EspecieConNombreComun[]> {
     return await this.spotService.findAllEspecies(id);
   }
 
+  @Get('/:id/tipoPesca')
+  async findAllTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
+    return await this.spotService.findAllTipoPesca(id);
+}
   @Get(':id/carnadas')
   async getCarnadasByEspecies(@Param('id') idSpot: string): Promise<Record<string, Carnada[]>> {
     return this.spotService.findCarnadasByEspecies(idSpot);
   }
 }
+

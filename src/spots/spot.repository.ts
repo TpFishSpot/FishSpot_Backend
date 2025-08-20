@@ -6,14 +6,19 @@ import { Especie } from 'src/models/Especie';
 import { Spot, SpotCreationProps } from 'src/models/Spot';
 import { NombreEspecie } from 'src/models/NombreEspecie';
 import { NotFoundException } from '@nestjs/common';
+import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
+import { TipoPesca } from 'src/models/TipoPesca';
 
 @Injectable()
 export class SpotRepository {
+  [x: string]: any;
   constructor(
     @InjectModel(Spot)
     private readonly spotModel: typeof Spot,
     @InjectModel(SpotEspecie)
     private readonly spotEspecieModel: typeof SpotEspecie,
+     @InjectModel(SpotTipoPesca)
+    private readonly spotTipoPescaModel: typeof SpotTipoPesca, 
   ) {}
 
   async findAll(): Promise<Spot[]> {
@@ -51,4 +56,10 @@ export class SpotRepository {
       };
     });
   }
+  async obtenerTipoPesca(idSpot: string): Promise<SpotTipoPesca[]> {
+  return this.spotTipoPescaModel.findAll({
+    where: { idSpot },
+    include: [TipoPesca], 
+  });
+}
 }
