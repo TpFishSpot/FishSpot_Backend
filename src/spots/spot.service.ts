@@ -6,10 +6,15 @@ import { v4 as uuidv4 } from 'uuid';
 import { Sequelize } from 'sequelize';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
+import { EspecieService } from 'src/especie/especie.service';
 
 @Injectable()
 export class SpotService {
-  constructor(private readonly spotRepository: SpotRepository) {}
+  constructor(
+    private readonly spotRepository: SpotRepository,
+    private readonly especieService: EspecieService,
+  ) {}
+
 
   async findAll(): Promise<Spot[]> {
     return this.spotRepository.findAll();
@@ -50,5 +55,10 @@ export class SpotService {
 
   async findAllTipoPesca(id: string): Promise<SpotTipoPesca[]> {
     return this.spotRepository.obtenerTipoPesca(id);
+  }
+
+  async findCarnadasByEspecies(id: string){
+    const idsEspecies: string[] = (await this.findAllEspecies(id)).map(( e => e.id))
+    return this.especieService.findCarnadasByEspecies(idsEspecies);
   }
 }

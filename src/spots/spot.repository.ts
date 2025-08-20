@@ -48,6 +48,7 @@ export class SpotRepository {
     return relaciones.map((rel) => {
       const especie = rel.especie;
       return {
+        id: especie.idEspecie,
         nombre_cientifico: especie.nombreCientifico,
         descripcion: especie.descripcion,
         nombre_comun: especie.nombresComunes?.map(nc => nc.nombre) || [],
