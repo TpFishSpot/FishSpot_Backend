@@ -3,28 +3,34 @@ import { Spot } from 'src/models/Spot';
 import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
 import { v4 as uuidv4 } from 'uuid';
+import { Sequelize } from 'sequelize';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 
 @Injectable()
 export class SpotService {
-  constructor(
-    private readonly spotRepository: SpotRepository,
-  ) {}
+  constructor(private readonly spotRepository: SpotRepository) {}
 
   async findAll(): Promise<Spot[]> {
     return this.spotRepository.findAll();
   }
 
-  async agregarSpot(spotDto: SpotDto, imagenPath: string | undefined ): Promise<Spot> {
+  async agregarSpot(spotDto: SpotDto, imagenPath?: string): Promise<Spot> {
     const hoy = new Date();
     const soloFecha = new Date(hoy.getFullYear(), hoy.getMonth(), hoy.getDate());
+    const [lng, lat] = spotDto.ubicacion.coordinates;
+
+    const punto = Sequelize.fn(
+      'ST_SetSRID',
+      Sequelize.fn('ST_MakePoint', lng, lat),
+      4326
+    );
 
     return this.spotRepository.create({
       id: uuidv4(),
       nombre: spotDto.nombre,
       descripcion: spotDto.descripcion,
-      ubicacion: spotDto.ubicacion,
+      ubicacion: punto,
       estado: spotDto.estado,
       fechaPublicacion: soloFecha,
       fechaActualizacion: soloFecha,
@@ -35,13 +41,14 @@ export class SpotService {
   }
 
   async find(id: string): Promise<Spot> {
-   return await this.spotRepository.findOne(id)
+    return this.spotRepository.findOne(id);
   }
-  
+
   async findAllEspecies(id: string): Promise<EspecieConNombreComun[]> {
-    return await this.spotRepository.obtenerEspeciesPorSpot(id);
+    return this.spotRepository.obtenerEspeciesPorSpot(id);
   }
+
   async findAllTipoPesca(id: string): Promise<SpotTipoPesca[]> {
-  return this.spotRepository.obtenerTipoPesca(id);
+    return this.spotRepository.obtenerTipoPesca(id);
   }
 }

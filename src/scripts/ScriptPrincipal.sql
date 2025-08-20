@@ -76,7 +76,7 @@ CREATE TABLE "Spot" (
   FOREIGN KEY ("idUsuarioActualizo") REFERENCES "Usuario"("id")
 );
 
-CREATE TABLE "SpotTipoPesca" (
+CREATE TABLE "SpotTipoPesca" (                                                
   "id" VARCHAR(255) PRIMARY KEY,
   "idSpot" VARCHAR(255),
   "idTipoPesca" VARCHAR(255),
@@ -216,3 +216,35 @@ INSERT INTO "SpotEspecie" ("id", "idSpot", "idEspecie") VALUES
 ('se2', 'SpotSecreto', 'es2'),
 ('se3', 'SpotSecreto', 'es3'),
 ('se4', 'SpotSecreto', 'es4');
+
+
+INSERT INTO "TipoPesca" ("id", "nombre", "descripcion") VALUES
+  ('tp2', 'Bait Casting', 'Pesca con caña y reel tipo baitcasting, ideal para especies depredadoras.'),
+  ('tp3', 'Pesca de Fondo', 'Pesca con línea en el fondo del agua, efectiva para bagres y carpas.'),
+  ('tp4', 'Pesca de Flote', 'Pesca usando boya o flotador, ideal para especies que se alimentan en superficie o media agua.');
+
+
+INSERT INTO "SpotTipoPesca" ("id", "idSpot", "idTipoPesca") VALUES
+  ('stp2', 'SpotSecreto', 'tp1'),
+  ('stp3', 'SpotSecreto', 'tp2'),
+  ('stp4', 'SpotSecreto', 'tp3'), 
+  ('stp5', 'SpotSecreto', 'tp4'); 
+
+INSERT INTO "SpotTipoPesca" ("id", "idSpot", "idTipoPesca") VALUES
+  ('stp6', 'SpotSecreto', 'tp3'); 
+
+INSERT INTO "SpotTipoPesca" ("id", "idSpot", "idTipoPesca") VALUES
+  ('stp7', 'SpotSecreto', 'tp3'); 
+
+INSERT INTO "SpotTipoPesca" ("id", "idSpot", "idTipoPesca") VALUES
+  ('stp8', 'SpotSecreto', 'tp3'), 
+  ('stp9', 'SpotSecreto', 'tp4'); 
+
+
+  select * from "Spot";
+
+DELETE FROM "Spot"
+WHERE "id" NOT IN (
+  'SpotSecreto'
+);
+
