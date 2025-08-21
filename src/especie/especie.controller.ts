@@ -1,8 +1,8 @@
 import { Controller, Get, Param, ParseUUIDPipe } from '@nestjs/common';
 import { Carnada } from 'src/models/Carnada';
 import { EspecieService } from './especie.service';
-import { Especie } from 'src/models/Especie';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
+import { TipoPescaEspecieDto } from './especie.repository';
 
 @Controller('especie')
 export class EspecieController {
@@ -16,5 +16,10 @@ export class EspecieController {
   @Get(':id')
   async findOne(@Param('id') idEspecie: string): Promise<EspecieConNombreComun>{
     return this.especieService.findOne(idEspecie);
+  }
+
+  @Get(':id/tipoPesca')
+  async getTipoPesca( @Param('id') idEspecie: string): Promise<TipoPescaEspecieDto[]> {
+    return this.especieService.getTiposPescaByEspecie(idEspecie);
   }
 }

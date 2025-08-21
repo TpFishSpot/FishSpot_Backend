@@ -17,13 +17,13 @@ export class TipoPesca extends Model<TipoPesca> {
     type: DataType.STRING,
     allowNull: false,
   })
-  nombre: string;
+  declare nombre: string;
 
   @Column({
     type: DataType.TEXT,
     allowNull: true,
   })
-  descripcion: string;
+  declare descripcion: string;
 
   @HasMany(() => SpotTipoPesca, 'idTipoPesca')
   spotTipoPesca: SpotTipoPesca[];

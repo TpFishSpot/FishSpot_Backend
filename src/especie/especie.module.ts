@@ -7,9 +7,10 @@ import { SpotCarnadaEspecie } from "src/models/SpotCarnadaEspecie";
 import { Especie } from "src/models/Especie";
 import { Spot } from "src/models/Spot";
 import { Module } from "@nestjs/common";
+import { EspecieTipoPesca } from "src/models/EspecieTipoPesca";
 
 @Module({
-  imports: [SequelizeModule.forFeature([Carnada, SpotCarnadaEspecie, Especie, Spot])],
+  imports: [SequelizeModule.forFeature([Carnada, SpotCarnadaEspecie, Especie, Spot,EspecieTipoPesca])],
   controllers: [EspecieController],
   providers: [EspecieService, EspecieRepository],
   exports: [EspecieService],

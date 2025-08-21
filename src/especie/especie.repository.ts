@@ -6,6 +6,14 @@ import { Carnada } from 'src/models/Carnada';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
 import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
+import { TipoPesca } from 'src/models/TipoPesca';
+import { EspecieTipoPesca } from 'src/models/EspecieTipoPesca';
+
+export interface TipoPescaEspecieDto {
+  id: string;
+  nombre: string;
+  descripcion?: string; 
+}
 
 @Injectable()
 export class EspecieRepository {
@@ -14,6 +22,8 @@ export class EspecieRepository {
         private readonly spotCarnadaEspecieModel: typeof SpotCarnadaEspecie,
         @InjectModel(Especie)
         private readonly especieModel: typeof Especie,
+        @InjectModel(EspecieTipoPesca)
+        private readonly  especieTipoPesca: typeof EspecieTipoPesca,
     ) {}
     
     async findCarnadasByEspecie(idEspecie: string): Promise<Carnada[]> {
@@ -77,5 +87,21 @@ export class EspecieRepository {
 
     return carnadasPorEspecie;
   }
+ async findTipoPescaEspecie(idEspecie: string): Promise<TipoPescaEspecieDto[]> {
+  const registros = await this.especieTipoPesca.findAll({
+    where: { idEspecie },
+    include: [{ model: TipoPesca, as: 'tipoPesca' }],
+  });
+  if (!registros.length) {
+    throw new NotFoundException(`No se encontraron tipos de pesca para la especie ${idEspecie}`);
+   }
+  const tipos: TipoPescaEspecieDto[] = registros.map((registro) => ({
+    id: registro.tipoPesca.id,
+    nombre: registro.tipoPesca.nombre,
+    descripcion: registro.descripcion || registro.tipoPesca.descripcion,
+    }));
 
+  return tipos; 
+ }
+  
 }

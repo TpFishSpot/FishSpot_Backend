@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { Carnada } from 'src/models/Carnada';
-import { EspecieRepository } from './especie.repository';
+import { EspecieRepository, TipoPescaEspecieDto } from './especie.repository';
 import { Especie } from 'src/models/Especie';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
+import { TipoPesca } from 'src/models/TipoPesca';
 
 @Injectable()
 export class EspecieService {
@@ -16,5 +17,8 @@ export class EspecieService {
   }
   async findCarnadasByEspecies(ids: string[]): Promise<Record<string, Carnada[]>> {
     return this.especieRepository.findCarnadasByEspecies(ids);
+  }
+  async getTiposPescaByEspecie(idEspecie: string): Promise<TipoPescaEspecieDto[]> {
+    return this.especieRepository.findTipoPescaEspecie(idEspecie);
   }
 }
