@@ -4,6 +4,7 @@
 /build
 .env
 /uploads/
+package-lock.json
 
 # Logs
 logs
