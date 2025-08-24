@@ -4,9 +4,15 @@ import { EspecieService } from './especie.service';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { TipoPescaEspecieDto } from './especie.repository';
 
+
 @Controller('especie')
 export class EspecieController {
   constructor(private readonly especieService: EspecieService) {}
+
+  @Get()
+  async getEspecies(): Promise<EspecieConNombreComun[]> {
+    return this.especieService.getEspecies()
+  }
 
   @Get(':id/carnadas')
   async getCarnadasRecomendadas( @Param('id') idEspecie: string): Promise<Carnada[]> {

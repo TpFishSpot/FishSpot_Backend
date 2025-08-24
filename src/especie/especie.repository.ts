@@ -1,13 +1,15 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
-import { Op } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
+import { v4 as uuidv4 } from 'uuid';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { Carnada } from 'src/models/Carnada';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
-import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
 import { TipoPesca } from 'src/models/TipoPesca';
 import { EspecieTipoPesca } from 'src/models/EspecieTipoPesca';
+import { SpotEspecie } from 'src/models/SpotEspecie';
+import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
 
 export interface TipoPescaEspecieDto {
   id: string;
@@ -19,11 +21,13 @@ export interface TipoPescaEspecieDto {
 export class EspecieRepository {
     constructor(
         @InjectModel(SpotCarnadaEspecie)
-        private readonly spotCarnadaEspecieModel: typeof SpotCarnadaEspecie,
+        private readonly spotCarnadaEspecieModel: typeof SpotCarnadaEspecie,  
         @InjectModel(Especie)
         private readonly especieModel: typeof Especie,
         @InjectModel(EspecieTipoPesca)
         private readonly  especieTipoPesca: typeof EspecieTipoPesca,
+        @InjectModel(SpotEspecie)
+        private readonly spotEspecieModel: typeof SpotEspecie,
     ) {}
     
     async findCarnadasByEspecie(idEspecie: string): Promise<Carnada[]> {
@@ -85,23 +89,48 @@ export class EspecieRepository {
       }
     }
 
-    return carnadasPorEspecie;
-  }
- async findTipoPescaEspecie(idEspecie: string): Promise<TipoPescaEspecieDto[]> {
-  const registros = await this.especieTipoPesca.findAll({
-    where: { idEspecie },
-    include: [{ model: TipoPesca, as: 'tipoPesca' }],
-  });
-  if (!registros.length) {
-    throw new NotFoundException(`No se encontraron tipos de pesca para la especie ${idEspecie}`);
-   }
-  const tipos: TipoPescaEspecieDto[] = registros.map((registro) => ({
-    id: registro.tipoPesca.id,
-    nombre: registro.tipoPesca.nombre,
-    descripcion: registro.descripcion || registro.tipoPesca.descripcion,
-    }));
+        return carnadasPorEspecie;
+    }
 
-  return tipos; 
- }
-  
+    async findTipoPescaEspecie(idEspecie: string): Promise<TipoPescaEspecieDto[]> {
+        const registros = await this.especieTipoPesca.findAll({
+            where: { idEspecie },
+            include: [{ model: TipoPesca, as: 'tipoPesca' }],
+        });
+
+        if (!registros.length) {
+            throw new NotFoundException(`No se encontraron tipos de pesca para la especie ${idEspecie}`);
+        }
+
+        return registros.map(registro => ({
+            id: registro.tipoPesca.id,
+            nombre: registro.tipoPesca.nombre,
+            descripcion: registro.descripcion || registro.tipoPesca.descripcion,
+        }));
+    }
+
+    async bulkCreateSpotEspecie(idSpot: string, especies: string[], transaction: Transaction) {
+        const registros = especies.map(idEspecie => ({
+            idSpotEspecie: uuidv4(),
+            idSpot,
+            idEspecie
+        })) as  any[];
+
+        await this.spotEspecieModel.bulkCreate(registros, { transaction });
+    }
+
+    async getEspecies(): Promise<EspecieConNombreComun[]> {
+        const especies = await this.especieModel.findAll({
+            include: [{ model: NombreEspecie, attributes: ['nombre'] }],
+        });
+
+        return especies.map(e => ({
+            id: e.idEspecie,
+            nombre_cientifico: e.nombreCientifico,
+            descripcion: e.descripcion,
+            imagen: e.imagen,
+            nombre_comun: e.nombresComunes?.map(n => n.nombre) || [],
+        }));
+    }
 }
+

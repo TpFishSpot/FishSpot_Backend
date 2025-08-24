@@ -12,6 +12,7 @@ import { EspecieModule } from './especie/especie.module';
     ConfigModule.forRoot({ isGlobal: true }),
     DatabaseModule,
     SpotModule,
+    CarnadaModule,
     EspecieModule,
   ],
 })

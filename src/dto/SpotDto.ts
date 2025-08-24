@@ -1,7 +1,8 @@
 import {
   IsString,
   IsObject,
-  IsOptional
+  IsOptional,
+  IsArray,
 } from 'class-validator';
 import { EstadoSpot } from 'src/models/EstadoSpot';
 
@@ -30,5 +31,16 @@ export class SpotDto {
   @IsOptional()
   @IsString()
   imagenPortada?: string;
-}
 
+  @IsOptional()
+  @IsArray()
+  especies?: string[]; 
+
+  @IsOptional()
+  @IsArray()
+  tiposPesca?: string[]; 
+
+  @IsOptional()
+  @IsArray()
+  carnadasEspecies?: { idEspecie: string; idCarnada: string }[];
+}

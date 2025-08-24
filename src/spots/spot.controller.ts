@@ -47,7 +47,10 @@ export class SpotController {
       }),
     }),
   )
-  async crearSpot(@UploadedFile() imagen: Express.Multer.File, @Body() rawBody: any) {
+  async crearSpot(
+    @UploadedFile() imagen: Express.Multer.File,
+    @Body() rawBody: any,
+  ) {
     if (typeof rawBody.ubicacion === 'string') {
       try {
         rawBody.ubicacion = JSON.parse(rawBody.ubicacion);
@@ -56,33 +59,37 @@ export class SpotController {
       }
     }
 
-    if (!rawBody.idUsuarioActualizo) {
-      rawBody.idUsuarioActualizo = rawBody.idUsuario;
-    }
+    if (typeof rawBody.especies === 'string') rawBody.especies = JSON.parse(rawBody.especies);
+    if (typeof rawBody.tiposPesca === 'string') rawBody.tiposPesca = JSON.parse(rawBody.tiposPesca);
+    if (typeof rawBody.carnadas === 'string') rawBody.carnadas = JSON.parse(rawBody.carnadas);
 
     const spotDto = plainToInstance(SpotDto, rawBody);
     const errors = await validate(spotDto);
-    if (errors.length > 0) {
-      throw new BadRequestException(errors);
-    }
+    if (errors.length > 0) throw new BadRequestException(errors);
 
     const imagenPath = imagen ? `uploads/${imagen.filename}` : undefined;
 
-    return this.spotService.agregarSpot(spotDto, imagenPath);
+    return this.spotService.agregarSpot(
+      spotDto,
+      imagenPath,
+      rawBody.especies || [],
+      rawBody.tiposPesca || [],
+      rawBody.carnadas || [],
+    );
   }
 
   @Get('/:id/especies')
   async findAllEspecies(@Param('id') id: string): Promise<EspecieConNombreComun[]> {
-    return await this.spotService.findAllEspecies(id);
+    return this.spotService.findAllEspecies(id);
   }
 
   @Get('/:id/tipoPesca')
   async findAllTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
-    return await this.spotService.findAllTipoPesca(id);
-}
+    return this.spotService.findAllTipoPesca(id);
+  }
+
   @Get(':id/carnadas')
   async getCarnadasByEspecies(@Param('id') idSpot: string): Promise<Record<string, Carnada[]>> {
     return this.spotService.findCarnadasByEspecies(idSpot);
   }
 }
-
