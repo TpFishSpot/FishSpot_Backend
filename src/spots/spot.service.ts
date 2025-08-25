@@ -8,6 +8,7 @@ import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 import { v4 as uuidv4 } from 'uuid';
 import { EspecieRepository } from 'src/especie/especie.repository';
 import { CarnadaRepository } from 'src/carnada/carnada.repository';
+import { EstadoSpot } from 'src/models/EstadoSpot';
 
 @Injectable()
 export class SpotService {
@@ -88,5 +89,16 @@ export class SpotService {
   async findCarnadasByEspecies(id: string){
     const idsEspecies: string[] = (await this.findAllEspecies(id)).map(( e => e.id))
     return this.especieService.findCarnadasByEspecies(idsEspecies);
+  }
+
+  async aprobar(id: string): Promise<Spot>{
+   return await this.spotRepository.cambiarEstado(id, EstadoSpot.Aceptado)
+  }
+  async rechazar(id: string): Promise<Spot>{
+   return await this.spotRepository.cambiarEstado(id, EstadoSpot.Rechazado)
+  }
+
+  async esperando(): Promise<Spot[]>{
+    return await this.spotRepository.filtrarEsperando();
   }
 }

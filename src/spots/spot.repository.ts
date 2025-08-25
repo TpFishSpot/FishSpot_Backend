@@ -8,8 +8,9 @@ import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
 import { TipoPesca } from 'src/models/TipoPesca';
-import { Transaction, fn } from 'sequelize';
+import { Transaction } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
+import { EstadoSpot } from 'src/models/EstadoSpot';
 
 
 @Injectable()
@@ -116,4 +117,22 @@ export class SpotRepository {
       return nuevoSpot;
     });
   }
+
+  async cambiarEstado(id: string, nuevoEstado: EstadoSpot): Promise<Spot> {
+    const spot = await this.spotModel.findByPk(id);
+
+    if (!spot) {
+      throw new Error(`No se encontro spot con id ${id}`);
+    }
+
+    spot.estado = nuevoEstado;
+    await spot.save();
+
+    return spot;
+  }
+
+  async filtrarEsperando(): Promise<Spot[]>{
+    return await this.spotModel.findAll({ where: {estado: "Esperando"}})
+  }
+
 }
