@@ -135,4 +135,7 @@ export class SpotRepository {
     return await this.spotModel.findAll({ where: {estado: "Esperando"}})
   }
 
+  async filtrarAceptados(): Promise<Spot[]>{
+    return await this.spotModel.findAll({ where: {estado: "Aceptado"}})
+  }
 }
