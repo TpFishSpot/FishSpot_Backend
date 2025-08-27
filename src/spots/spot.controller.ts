@@ -7,6 +7,7 @@ import {
   Get,
   Param,
   BadRequestException,
+  Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -28,6 +29,10 @@ export class SpotController {
   @Get()
   findAll() {
     return this.spotService.findAll();
+  }
+  @Get("/esperando")
+  async esperando(): Promise<Spot[]>{
+    return this.spotService.esperando();
   }
 
   @Get(':id')
@@ -92,4 +97,16 @@ export class SpotController {
   async getCarnadasByEspecies(@Param('id') idSpot: string): Promise<Record<string, Carnada[]>> {
     return this.spotService.findCarnadasByEspecies(idSpot);
   }
+
+  @Patch(":id/aprobar")
+  // @Roles("moderador")
+  async aprobar(@Param("id") id: string): Promise<Spot> {
+    return this.spotService.aprobar(id);
+  }
+  @Patch(":id/rechazar")
+  // @Roles("moderador")
+  async rechazar(@Param("id") id: string): Promise<Spot> {
+    return this.spotService.rechazar(id);
+  }
+
 }

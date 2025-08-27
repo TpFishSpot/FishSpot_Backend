@@ -1,7 +1,7 @@
 
 export enum EstadoSpot {
-    Aceptado,
-    Esperando,
-    Rechazado,
-    Inactivo
+    Aceptado = 'Aceptado',
+    Esperando = 'Esperando',
+    Rechazado = 'Rechazado',
+    Inactivo = 'Inactivo'
 }
