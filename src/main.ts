@@ -2,7 +2,7 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
-import { join, resolve } from 'path';
+import { resolve } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 
 async function bootstrap() {
@@ -10,25 +10,26 @@ async function bootstrap() {
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
-
-
   app.enableCors({
-    origin: 'http://localhost:5173', 
+    origin: process.env.NODE_ENV === 'production' 
+      ? process.env.FRONTEND_URL 
+      : 'http://localhost:5173',
     credentials: true,
   });
+
   app.useStaticAssets(resolve(process.cwd(), 'uploads'), {
-  prefix: '/uploads/',
+    prefix: '/uploads/',
   });
 
-  app.useGlobalPipes(
-    new ValidationPipe({
-      whitelist: true,
-      forbidNonWhitelisted: true, 
-      transform: true    
-    }),
-  );
+  app.useGlobalPipes(new ValidationPipe({
+    whitelist: true,
+    forbidNonWhitelisted: true,
+    transform: true,
+  }));
 
-  await app.listen(process.env.PORT ?? 3000);
-  console.log(`🚀 App corriendo en: http://localhost:${process.env.PORT ?? 3000}`);
+  const port = process.env.PORT || 3000;
+  await app.listen(port);
+  console.log(`FishSpot API running on port ${port}`);
 }
+
 bootstrap();

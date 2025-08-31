@@ -13,6 +13,7 @@ import { Carnada } from 'src/models/Carnada';
 import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
 import { EspecieModule } from 'src/especie/especie.module';
 import { CarnadaModule } from 'src/carnada/carnada.module';
+import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
   imports: [
@@ -24,11 +25,16 @@ import { CarnadaModule } from 'src/carnada/carnada.module';
       SpotTipoPesca, 
       TipoPesca,
       Carnada,
-      SpotCarnadaEspecie
-    ]),EspecieModule,
-      CarnadaModule,
+      SpotCarnadaEspecie,
+    ]),
+    EspecieModule,
+    CarnadaModule,
+    AuthModule,
   ],
-  providers: [SpotService, SpotRepository],
+  providers: [
+    SpotService,
+    SpotRepository,
+  ],
   controllers: [SpotController],
 })
 export class SpotModule {}

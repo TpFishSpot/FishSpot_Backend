@@ -5,6 +5,8 @@
 .env
 /uploads/
 package-lock.json
+/src/auth/provider.ts
+firebase-service-account.json
 
 # Logs
 logs
