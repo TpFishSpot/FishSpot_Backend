@@ -35,6 +35,11 @@ export class SpotController {
     return this.spotService.esperando();
   }
 
+  @Get("/aceptados")
+  async aceptados(): Promise<Spot[]>{
+    return this.spotService.aceptados();
+  }
+
   @Get(':id')
   async find(@Param('id') id: string): Promise<Spot> {
     return this.spotService.find(id);

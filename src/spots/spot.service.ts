@@ -101,4 +101,7 @@ export class SpotService {
   async esperando(): Promise<Spot[]>{
     return await this.spotRepository.filtrarEsperando();
   }
+  async aceptados(): Promise<Spot[]>{
+    return await this.spotRepository.filtrarAceptados();
+  }
 }

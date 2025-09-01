@@ -20,7 +20,7 @@ export class SpotTipoPesca extends Model<SpotTipoPesca> {
     allowNull: false,
     field: 'idSpot',
   })
-  idSpot: string;
+  declare idSpot: string;
 
   @ForeignKey(() => TipoPesca)
   @Column({
@@ -28,8 +28,8 @@ export class SpotTipoPesca extends Model<SpotTipoPesca> {
     allowNull: false,
     field: 'idTipoPesca',
   })
-  idTipoPesca: string;
+  declare idTipoPesca: string;
 
   @BelongsTo(() => TipoPesca, 'idTipoPesca')
-  tipoPesca: TipoPesca;
+  declare tipoPesca: TipoPesca;
 }
