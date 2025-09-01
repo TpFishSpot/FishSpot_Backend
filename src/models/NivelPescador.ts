@@ -1,9 +1,8 @@
-  
-  export enum NivelPescador{ 
-  Principiante,
-  Aficionado ,
-  Intermedio ,
-  Avanzado ,
-  Experto ,
-  Profesional 
+export enum NivelPescador {
+  PRINCIPIANTE = 'Principiante',
+  AFICIONADO = 'Aficionado',
+  INTERMEDIO = 'Intermedio',
+  AVANZADO = 'Avanzado',
+  EXPERTO = 'Experto',
+  PROFESIONAL = 'Profesional'
 }

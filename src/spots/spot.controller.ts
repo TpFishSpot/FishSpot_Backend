@@ -8,6 +8,7 @@ import {
   Param,
   BadRequestException,
   Patch,
+  Req,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -21,17 +22,23 @@ import { validate } from 'class-validator';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 import { Carnada } from 'src/models/Carnada';
+import { Roles, Public } from 'src/auth/decorator';
+import { RequestWithUser } from 'src/auth/interfaces/auth.interface';
+import { UserRole } from 'src/auth/enums/roles.enum';
 
 @Controller('spot')
 export class SpotController {
   constructor(private readonly spotService: SpotService) {}
 
   @Get()
-  findAll() {
+  @Public()
+  findAll(): Promise<Spot[]> {
     return this.spotService.findAll();
   }
-  @Get("/esperando")
-  async esperando(): Promise<Spot[]>{
+
+  @Get('esperando')
+  @Roles(UserRole.MODERATOR)
+  esperando(): Promise<Spot[]> {
     return this.spotService.esperando();
   }
 
@@ -41,8 +48,27 @@ export class SpotController {
   }
 
   @Get(':id')
-  async find(@Param('id') id: string): Promise<Spot> {
+  @Public()
+  find(@Param('id') id: string): Promise<Spot> {
     return this.spotService.find(id);
+  }
+
+  @Get('/:id/especies')
+  @Public()
+  findAllEspecies(@Param('id') id: string): Promise<EspecieConNombreComun[]> {
+    return this.spotService.findAllEspecies(id);
+  }
+
+  @Get('/:id/tipoPesca')
+  @Public()
+  findAllTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
+    return this.spotService.findAllTipoPesca(id);
+  }
+
+  @Get(':id/carnadas')
+  @Public()
+  getCarnadasByEspecies(@Param('id') idSpot: string): Promise<Record<string, Carnada[]>> {
+    return this.spotService.findCarnadasByEspecies(idSpot);
   }
 
   @Post()
@@ -60,6 +86,7 @@ export class SpotController {
   async crearSpot(
     @UploadedFile() imagen: Express.Multer.File,
     @Body() rawBody: any,
+    @Req() request: RequestWithUser,
   ) {
     if (typeof rawBody.ubicacion === 'string') {
       try {
@@ -68,10 +95,12 @@ export class SpotController {
         throw new BadRequestException('ubicacion debe ser un JSON válido');
       }
     }
-
     if (typeof rawBody.especies === 'string') rawBody.especies = JSON.parse(rawBody.especies);
     if (typeof rawBody.tiposPesca === 'string') rawBody.tiposPesca = JSON.parse(rawBody.tiposPesca);
     if (typeof rawBody.carnadas === 'string') rawBody.carnadas = JSON.parse(rawBody.carnadas);
+
+    rawBody.idUsuario = request.user.uid;
+    rawBody.idUsuarioActualizo = request.user.uid;
 
     const spotDto = plainToInstance(SpotDto, rawBody);
     const errors = await validate(spotDto);
@@ -88,30 +117,15 @@ export class SpotController {
     );
   }
 
-  @Get('/:id/especies')
-  async findAllEspecies(@Param('id') id: string): Promise<EspecieConNombreComun[]> {
-    return this.spotService.findAllEspecies(id);
-  }
-
-  @Get('/:id/tipoPesca')
-  async findAllTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
-    return this.spotService.findAllTipoPesca(id);
-  }
-
-  @Get(':id/carnadas')
-  async getCarnadasByEspecies(@Param('id') idSpot: string): Promise<Record<string, Carnada[]>> {
-    return this.spotService.findCarnadasByEspecies(idSpot);
-  }
-
-  @Patch(":id/aprobar")
-  // @Roles("moderador")
-  async aprobar(@Param("id") id: string): Promise<Spot> {
+  @Patch(':id/aprobar')
+  @Roles(UserRole.MODERATOR)
+  aprobar(@Param('id') id: string): Promise<Spot> {
     return this.spotService.aprobar(id);
   }
-  @Patch(":id/rechazar")
-  // @Roles("moderador")
-  async rechazar(@Param("id") id: string): Promise<Spot> {
+
+  @Patch(':id/rechazar')
+  @Roles(UserRole.MODERATOR)
+  rechazar(@Param('id') id: string): Promise<Spot> {
     return this.spotService.rechazar(id);
   }
-
 }
