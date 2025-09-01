@@ -36,11 +36,6 @@ export class EspecieRepository {
       include: [Carnada],
     });
 
-    // Si no hay carnadas, devolvemos array vacío
-    if (!registros.length) {
-      return [];
-    }
-
     const carnadas = registros.map(r => r.carnada);
     const uniques = Array.from(new Map(carnadas.map(c => [c.idCarnada, c])).values());
     return uniques;
@@ -103,9 +98,8 @@ export class EspecieRepository {
             include: [{ model: TipoPesca, as: 'tipoPesca' }],
         });
 
-        // Si no hay registros, devolvemos array vacío en lugar de error
         if (!registros.length) {
-            return [];
+            throw new NotFoundException(`No se encontraron tipos de pesca para la especie ${idEspecie}`);
         }
 
         return registros.map(registro => ({
