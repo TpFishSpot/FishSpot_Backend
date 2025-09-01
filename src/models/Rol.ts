@@ -2,7 +2,10 @@ import { Table, Column, Model, DataType, BelongsToMany } from 'sequelize-typescr
 import { Usuario } from './Usuario';
 import { UsuarioRol } from './UsuarioRol';
 
-@Table({ tableName: 'Rol' })
+@Table({ 
+  tableName: 'Rol',
+  timestamps: false,
+})
 export class Rol extends Model<Rol> {
   @Column({
     primaryKey: true,

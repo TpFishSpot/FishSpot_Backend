@@ -10,6 +10,7 @@ import { AuthModule } from './auth/auth.module';
 import { AuthRolesGuard } from './auth/roles.guard';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { UsuarioModule } from './usuarios/usuario.module';
 
 @Module({
   imports: [
@@ -20,6 +21,7 @@ import { AppService } from './app.service';
     SpotModule,
     CarnadaModule,
     EspecieModule,
+    UsuarioModule,
   ],
   controllers: [AppController],
   providers: [
