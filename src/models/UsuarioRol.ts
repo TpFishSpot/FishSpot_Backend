@@ -2,7 +2,7 @@ import { Table, Column, Model, ForeignKey, DataType, BelongsTo } from 'sequelize
 import { Usuario } from './Usuario';
 import { Rol } from './Rol';
 
-@Table({ 
+@Table({
   tableName: 'UsuarioRol',
   timestamps: false
 })
@@ -17,7 +17,7 @@ export class UsuarioRol extends Model<UsuarioRol> {
 
   @BelongsTo(() => Rol, 'rolId')
   rol: Rol;
-  
+
   @BelongsTo(() => Usuario, 'usuarioId')
   usuario: Usuario;
 }

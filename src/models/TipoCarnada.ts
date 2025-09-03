@@ -1,9 +1,9 @@
-export enum TipoCarnada { 
+export enum TipoCarnada {
   ArtificialBlando = 'ArtificialBlando',
   ArtificialDuro = 'ArtificialDuro',
   CarnadaViva = 'CarnadaViva',
   CarnadaMuerta = 'CarnadaMuerta',
-  NaturalNoViva = 'NaturalNoViva', // ejemplo: masa, pan, preparados, harinados, cebos etc
+  NaturalNoViva = 'NaturalNoViva',
   MoscaArtificial = 'MoscaArtificial',
   Otros = 'Otros'
 }

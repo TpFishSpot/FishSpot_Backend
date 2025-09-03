@@ -1,5 +1,6 @@
 import { Column, DataType, HasMany, Model, Table } from "sequelize-typescript";
 import { NombreEspecie } from "./NombreEspecie";
+import { Captura } from "./Captura";
 
 @Table({ tableName: 'Especie', timestamps: false })
 export class Especie extends Model<Especie>{
@@ -17,4 +18,7 @@ export class Especie extends Model<Especie>{
 
     @HasMany(() => NombreEspecie)
     declare nombresComunes: NombreEspecie[];
+
+    @HasMany(() => Captura)
+    declare capturas: Captura[];
 }

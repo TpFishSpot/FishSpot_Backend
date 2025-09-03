@@ -1,3 +1,10 @@
+-- SCRIPT PRINCIPAL FISHSPOT - VERSIÓN COMPLETA Y CORREGIDA
+
+-- ============================================================
+-- ELIMINACIÓN DE TABLAS Y TIPOS EN ORDEN CORRECTO
+-- ============================================================
+
+DROP TABLE IF EXISTS "Captura" CASCADE;
 DROP TABLE IF EXISTS "Comentario" CASCADE;
 DROP TABLE IF EXISTS "SolicitudDeDato" CASCADE;
 DROP TABLE IF EXISTS "SpotCarnadaEspecie" CASCADE;
@@ -17,6 +24,10 @@ DROP TYPE IF EXISTS "NivelPescador" CASCADE;
 DROP TYPE IF EXISTS "EstadoSpot" CASCADE;
 DROP TYPE IF EXISTS "TipoCarnada" CASCADE;
 
+-- ============================================================
+-- CREACIÓN DE TIPOS ENUM
+-- ============================================================
+
 CREATE TYPE "NivelPescador" AS ENUM (
   'Principiante','Aficionado','Intermedio','Avanzado','Experto','Profesional'
 );
@@ -24,11 +35,15 @@ CREATE TYPE "NivelPescador" AS ENUM (
 CREATE TYPE "EstadoSpot" AS ENUM (
   'Esperando','Aceptado','Rechazado','Inactivo'
 );
+
 CREATE TYPE "TipoCarnada" AS ENUM (
   'ArtificialBlando', 'Natural' , 'ArtificialDuro','Viva','CarnadaMuerta','NaturalNoViva','MoscaArtificial','Otros'
 );
 
--- TABLAS
+-- ============================================================
+-- CREACIÓN DE TABLAS EN ORDEN DE DEPENDENCIAS
+-- ============================================================
+-- Tablas independientes primero
 CREATE TABLE "TipoPesca" (
   "id" VARCHAR(255) PRIMARY KEY,
   "nombre" VARCHAR(50) NOT NULL,
@@ -150,11 +165,60 @@ CREATE TABLE "EspecieTipoPesca" (
   FOREIGN KEY ("idTipoPesca") REFERENCES "TipoPesca"("id")
 );
 
+CREATE TABLE "Captura" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idUsuario" VARCHAR(255) NOT NULL,
+  "especieId" VARCHAR(255) NOT NULL,
+  "fecha" DATE NOT NULL,
+  "ubicacion" VARCHAR(500) NOT NULL,
+  "peso" DECIMAL(8,2),
+  "longitud" DECIMAL(6,2),
+  "carnada" VARCHAR(255) NOT NULL,
+  "tipoPesca" VARCHAR(255) NOT NULL,
+  "foto" VARCHAR(255),
+  "notas" TEXT,
+  "clima" VARCHAR(100),
+  "horaCaptura" TIME,
+  "fechaCreacion" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  "fechaActualizacion" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("especieId") REFERENCES "Especie"("id") ON DELETE RESTRICT
+);
+
+-- ============================================================
+-- ÍNDICES PARA OPTIMIZACIÓN
+-- ============================================================
+
+CREATE INDEX idx_captura_usuario ON "Captura"("idUsuario");
+CREATE INDEX idx_captura_especie ON "Captura"("especieId");
+CREATE INDEX idx_captura_fecha ON "Captura"("fecha");
+CREATE INDEX idx_captura_fecha_creacion ON "Captura"("fechaCreacion");
+CREATE INDEX idx_spot_ubicacion ON "Spot" USING GIST("ubicacion");
+CREATE INDEX idx_spot_estado ON "Spot"("estado");
+
+-- ============================================================
+-- TRIGGERS Y FUNCIONES
+-- ============================================================
+
+CREATE OR REPLACE FUNCTION update_captura_fecha_actualizacion()
+RETURNS TRIGGER AS $$
+BEGIN
+  NEW."fechaActualizacion" = CURRENT_TIMESTAMP;
+  RETURN NEW;
+END;
+$$ language 'plpgsql';
+
+CREATE TRIGGER trigger_update_captura_fecha
+  BEFORE UPDATE ON "Captura"
+  FOR EACH ROW
+  EXECUTE FUNCTION update_captura_fecha_actualizacion();
+
 --  DATOS BASE
 
 INSERT INTO "Usuario" ("id", "nombre", "nivelPescador", "email") VALUES
   ('usuario1', 'Carlos Tarucha', 'Avanzado', 'carlos@example.com'),
-  ('usuario2', 'Lucía Señuelera', 'Experto', 'lucia@example.com');
+  ('usuario2', 'Lucía Señuelera', 'Experto', 'lucia@example.com'),
+  ('Dg5rIRf4FLRXcQ5BKwZJj5OFlCG2', 'Pescador Firebase', 'Intermedio', 'firebase@fishspot.com');
 
 INSERT INTO "Rol" ("id", "nombre") VALUES
   ('rol1', 'usuario'),
@@ -164,6 +228,7 @@ INSERT INTO "UsuarioRol" ("usuarioId", "rolId") VALUES
   ('usuario1', 'rol1'),
   ('usuario1', 'rol2'),
   ('usuario2', 'rol1');
+
 
 INSERT INTO "TipoPesca" ("id", "nombre", "descripcion") VALUES
   ('tp1', 'Spinning', 'Pesca con señuelos artificiales usando caña ligera y reel frontal (spinning). Caña entre 1,8 y 2,4 m, acción media, señuelos blandos o duros.'),
@@ -1051,11 +1116,132 @@ INSERT INTO "SpotCarnadaEspecie" ("id", "idSpot", "idEspecie", "idCarnada") VALU
   ('sce120', 'SpotGeneral', 'es40', 'c28'), -- Mojarra viva
 
   -- Bagre blanco del sur (es41) - Protegido
-  ('sce121', 'SpotGeneral', 'es41', 'c19'), -- Lombriz común
-  ('sce122', 'SpotGeneral', 'es41', 'c74'), -- Pancora (solo conservación)
-  ('sce123', 'SpotGeneral', 'es41', 'c72'); -- Caracol de agua
+  ('sce121', 'SpotGeneral', 'es41', 'c19'); -- Lombriz común
 
+-- DATOS DE EJEMPLO DE CAPTURAS
+INSERT INTO "Captura" (
+  "id", "idUsuario", "especieId", "fecha", "ubicacion", "peso", "longitud", 
+  "carnada", "tipoPesca", "foto", "notas", "clima", "horaCaptura"
+) VALUES
+-- Capturas de Carlos Tarucha (usuario1)
+('cap001', 'usuario1', 'es2', '2024-03-15', 'Río Paraná - Puerto Iguazú', 8.50, 75.0, 
+ 'Popper dorado', 'Spinning', 'uploads/dorado_cap_001.jpg', 
+ 'Excelente pelea de 20 minutos. El dorado saltó 6 veces fuera del agua. Condiciones perfectas al amanecer.',
+ 'Despejado, sin viento', '06:30:00'),
+
+('cap002', 'usuario1', 'es1', '2024-03-20', 'Laguna Los Patos - San Pedro', 2.80, 48.0,
+ 'Rana artificial verde', 'Spinning', 'uploads/tararira_cap_002.jpg',
+ 'Tararira muy agresiva, atacó la rana en la primera pasada. Perfecta para la parrilla.',
+ 'Nublado, brisa suave', '18:45:00'),
+
+('cap003', 'usuario1', 'es13', '2024-02-28', 'Laguna de Chascomús', 0.850, 32.0,
+ 'Filet de mojarra', 'Pesca de Flote', 'uploads/pejerrey_cap_003.jpg',
+ 'Día ideal para pejerrey. Cardumen muy activo en la mañana. Capturé 12 ejemplares.',
+ 'Soleado, calmo', '09:15:00'),
+
+('cap004', 'usuario1', 'es3', '2024-03-10', 'Río Uruguay - Gualeguaychú', 15.20, 95.0,
+ 'Morena viva grande', 'Pesca de Fondo', 'uploads/surubi_cap_004.jpg',
+ 'Surubí nocturno de gran porte. Pesca desde la costa con equipo pesado. Pelea de 45 minutos.',
+ 'Noche despejada, sin luna', '23:30:00'),
+
+('cap005', 'usuario1', 'es6', '2024-03-25', 'Río Paraná - Rosario', 4.10, 55.0,
+ 'Mburucuyá maduro', 'Pesca de Fondo', 'uploads/pacu_cap_005.jpg',
+ 'Pacú capturado con fruta en bajante. Muy combativo para su tamaño. Excelente carne.',
+ 'Parcialmente nublado', '16:20:00'),
+
+-- Capturas de Lucía Señuelera (usuario2)
+('cap006', 'usuario2', 'es17', '2024-01-18', 'Río Limay - Bariloche', 3.40, 52.0,
+ 'Cucharita giratoria #3', 'Spinning', 'uploads/trucha_cap_006.jpg',
+ 'Trucha arcoíris en perfecto estado. Agua cristalina a 12°C. Liberada después de la foto.',
+ 'Fresco, parcialmente nublado', '07:00:00'),
+
+('cap007', 'usuario2', 'es18', '2024-01-22', 'Río Traful - Villa Traful', 5.80, 68.0,
+ 'Mosca seca #14', 'Mosca (Fly Fishing)', 'uploads/trucha_marron_cap_007.jpg',
+ 'Trucha marrón selectiva. Tardé 3 horas en encontrar la mosca correcta. Vale la pena la paciencia.',
+ 'Nublado, ideal para moscas', '19:30:00'),
+
+('cap008', 'usuario2', 'es2', '2024-02-14', 'Río Paraná - Delta del Tigre', 6.20, 68.0,
+ 'Paseante plateado', 'Bait Casting', 'uploads/dorado_cap_008.jpg',
+ 'Dorado del Delta, más oscuro que los de río arriba. Ataque explosivo en canal profundo.',
+ 'Caluroso, húmedo', '17:45:00'),
+
+('cap009', 'usuario2', 'es9', '2024-03-08', 'Río Paraná - Puerto Gaboto', 1.90, 42.0,
+ 'Maíz hervido', 'Pesca de Flote', 'uploads/boga_cap_009.jpg',
+ 'Boga muy combativa en equipo liviano. Cardumen numeroso alimentándose activamente.',
+ 'Viento sur moderado', '14:30:00'),
+
+('cap010', 'usuario2', 'es24', '2024-02-20', 'Laguna San Roque - Córdoba', 7.80, 72.0,
+ 'Boilies de frutos rojos', 'Pesca con Cebado', 'uploads/carpa_cap_010.jpg',
+ 'Carpa gigante después de 6 horas de cebado. Pelea épica de una hora. Equipo al límite.',
+ 'Calmo, atardecer dorado', '20:15:00'),
+
+-- Capturas adicionales para mostrar diversidad
+('cap011', 'usuario1', 'es11', '2024-03-18', 'Río Paraná - Paso de la Patria', 7.50, 72.0,
+ 'Paseante gigante', 'Bait Casting', 'uploads/tararira_azul_cap_011.jpg',
+ 'Tararira azul de gran tamaño. Muy agresiva, destrozó dos señuelos antes de este.',
+ 'Tormentoso, pre-tormenta', '18:00:00'),
+
+('cap012', 'usuario2', 'es20', '2024-03-12', 'Río de la Plata - Tigre', 1.20, 38.0,
+ 'Lombriz de mar', 'Pesca de Fondo', 'uploads/bagre_cap_012.jpg',
+ 'Bagre blanco nocturno. Pesca desde muelle, muy común en esta zona del río.',
+ 'Noche húmeda', '22:00:00'),
+
+('cap013', 'usuario1', 'es25', '2024-03-22', 'Arroyo Pergamino', 0.15, 12.0,
+ 'Lombriz cortada', 'Mojarrero', 'uploads/mojarra_cap_013.jpg',
+ 'Sesión de mojarrero en arroyo cristalino. Capturé 30 ejemplares con equipo ultra liviano.',
+ 'Fresco, ideal', '10:30:00'),
+
+('cap014', 'usuario2', 'es16', '2024-01-25', 'Lago Nahuel Huapi - Bariloche', 2.10, 35.0,
+ 'Streamer zonker', 'Mosca (Fly Fishing)', 'uploads/perca_cap_014.jpg',
+ 'Perca criolla en aguas profundas. Excelente pelea y sabor. Técnica de hundimiento.',
+ 'Frío, viento norte', '15:45:00'),
+
+('cap015', 'usuario1', 'es4', '2024-03-05', 'Río Uruguay - Concordia', 12.30, 85.0,
+ 'Mojarra viva 20cm', 'Pesca Nocturna Especializada', 'uploads/surubi_atigrado_cap_015.jpg',
+ 'Surubí atigrado nocturno. Equipo pesado necesario. Pelea brutal de 35 minutos en correntada.',
+ 'Noche cerrada, húmeda', '01:15:00'),
+
+-- Capturas estacionales y técnicas especiales
+('cap016', 'usuario2', 'es19', '2024-01-10', 'Arroyo Pescado - El Bolsón', 0.680, 28.0,
+ 'Mosca seca hormiga #16', 'Mosca (Fly Fishing)', 'uploads/trucha_arroyo_cap_016.jpg',
+ 'Trucha de arroyo en agua cristalina de montaña. La más bella de todas. Liberada inmediatamente.',
+ 'Perfecto, sin viento', '11:00:00'),
+
+('cap017', 'usuario1', 'es32', '2024-03-28', 'Arroyo Los Ingleses - Tandil', 0.08, 8.0,
+ 'Mini cucharita dorada', 'Spinning Ultra Liviano', 'uploads/dientudo_cap_017.jpg',
+ 'Dientudo combativo en arroyo serrano. Equipo ultra liviano, anzuelo N°16. Muy deportivo.',
+ 'Soleado, brisa suave', '16:00:00'),
+
+('cap018', 'usuario2', 'es14', '2024-12-15', 'Lago Traful - Villa Traful', 1.10, 35.0,
+ 'Ninfa patagónica', 'Fly Fishing Ninfeo', 'uploads/pejerrey_patagonico_cap_018.jpg',
+ 'Pejerrey patagónico en lago frío. Técnica específica con mosca hundida. Agua a 8°C.',
+ 'Frío intenso, calmo', '13:30:00'),
+
+('cap019', 'usuario1', 'es29', '2024-03-30', 'Arroyo Dulce - Villa María', 0.45, 18.0,
+ 'Micro jig verde', 'Pesca a la Cueva', 'uploads/palometa_cap_019.jpg',
+ 'Palometa territorial bajo tronco caído. Lanzamiento preciso necesario. Muy agresiva.',
+ 'Cálido, sin viento', '17:30:00'),
+
+('cap020', 'usuario2', 'es39', '2024-01-20', 'Lago Gutiérrez - Bariloche', 0.18, 22.0,
+ 'Ninfa microscópica', 'Pesca en Espejos', 'uploads/puyen_cap_020.jpg',
+ 'Puyén grande endémico patagónico. Especie nativa muy especial. Técnica ultra fina requerida.',
+ 'Frío, lago como espejo', '14:00:00');
 
 select * from "Usuario";
+
+
+
+SELECT 'USUARIOS' as tabla, COUNT(*) as registros FROM "Usuario"
+UNION ALL
+SELECT 'ESPECIES' as tabla, COUNT(*) as registros FROM "Especie"
+UNION ALL  
+SELECT 'CARNADAS' as tabla, COUNT(*) as registros FROM "Carnada"
+UNION ALL
+SELECT 'TIPOS_PESCA' as tabla, COUNT(*) as registros FROM "TipoPesca"
+UNION ALL
+SELECT 'SPOTS' as tabla, COUNT(*) as registros FROM "Spot"
+UNION ALL
+SELECT 'CAPTURAS' as tabla, COUNT(*) as registros FROM "Captura"
+ORDER BY tabla;
 
 

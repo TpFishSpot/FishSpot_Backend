@@ -8,8 +8,6 @@ import { Especie } from 'src/models/Especie';
 import { Spot } from 'src/models/Spot';
 import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
 
-
-// no esta cargado en app.module.ts
 @Module({
   imports: [SequelizeModule.forFeature([Carnada, SpotCarnadaEspecie, Especie, Spot])],
   controllers: [CarnadaController],

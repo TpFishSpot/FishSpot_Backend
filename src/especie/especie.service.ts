@@ -3,7 +3,6 @@ import { Carnada } from 'src/models/Carnada';
 import { EspecieRepository, TipoPescaEspecieDto } from './especie.repository';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 
-
 @Injectable()
 export class EspecieService {
   constructor(private readonly especieRepository: EspecieRepository) {}

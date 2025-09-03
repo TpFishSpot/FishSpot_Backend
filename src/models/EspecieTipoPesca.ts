@@ -37,7 +37,7 @@ export class EspecieTipoPesca extends Model {
     field: "descripcion",
   })
   declare descripcion?: string;
-  
+
   @BelongsTo(() => TipoPesca, 'idTipoPesca')
    declare tipoPesca: TipoPesca;
 }

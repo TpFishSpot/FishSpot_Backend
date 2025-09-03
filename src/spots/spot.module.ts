@@ -22,7 +22,7 @@ import { AuthModule } from 'src/auth/auth.module';
       SpotEspecie,
       Especie,
       NombreEspecie,
-      SpotTipoPesca, 
+      SpotTipoPesca,
       TipoPesca,
       Carnada,
       SpotCarnadaEspecie,

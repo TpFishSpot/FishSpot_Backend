@@ -7,7 +7,7 @@ import { SpotTipoPesca } from './SpotTipoPesca';
 })
 export class TipoPesca extends Model<TipoPesca> {
   @Column({
-    type: DataType.STRING,  
+    type: DataType.STRING,
     primaryKey: true,
     field: 'id',
   })

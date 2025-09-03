@@ -38,8 +38,8 @@ export class AuthRolesGuard implements CanActivate {
       }
       
       const user = await this.userService.findOrCreateUser(
-        decodedToken.uid, 
-        decodedToken.email, 
+        decodedToken.uid,
+        decodedToken.email,
         decodedToken.name
       );
       const roles = await this.userService.getUserRoles(decodedToken.uid);
@@ -50,14 +50,13 @@ export class AuthRolesGuard implements CanActivate {
         roles,
       };
 
-   
       const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
         context.getHandler(),
         context.getClass(),
       ]);
 
       if (!requiredRoles || requiredRoles.length === 0) {
-        return true; 
+        return true;
       }
 
       const hasRole = requiredRoles.some(role => roles.includes(role));
