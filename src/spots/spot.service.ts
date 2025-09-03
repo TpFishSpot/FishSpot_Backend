@@ -56,6 +56,7 @@ export class SpotService {
         idUsuario: spotDto.idUsuario,
         idUsuarioActualizo: spotDto.idUsuario,
         imagenPortada: imagenPath,
+        isDeleted: false,
       }, { transaction: t });
 
       if (especies.length) {
@@ -103,5 +104,9 @@ export class SpotService {
   }
   async aceptados(): Promise<Spot[]>{
     return await this.spotRepository.filtrarAceptados();
+  }
+
+  async borrarSpot(id: string): Promise<string>{
+    return await this.spotRepository.borrarSpot(id);
   }
 }

@@ -21,6 +21,7 @@ export interface SpotProps{
   idUsuario: string;
   idUsuarioActualizo: string;
   imagenPortada?: string;
+  isDeleted: boolean;
 }
 
 export interface SpotCreationProps extends Optional<SpotProps, 'id'> {}
@@ -64,4 +65,10 @@ export class Spot extends Model<SpotProps, SpotCreationProps> {
     allowNull: true,
   })
   declare imagenPortada?: string;
+
+  @Column({
+    type: DataType.BOOLEAN,
+    defaultValue: false,
+  })
+  declare isDeleted: boolean;
 }

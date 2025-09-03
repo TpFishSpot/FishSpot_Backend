@@ -35,7 +35,7 @@ export class SpotRepository {
   }
 
   async findAll(): Promise<Spot[]> {
-    return this.spotModel.findAll();
+    return await this.spotModel.findAll({ where: { isDeleted: false } });
   }
 
   async findOne(id: string): Promise<Spot> {
@@ -137,5 +137,12 @@ export class SpotRepository {
 
   async filtrarAceptados(): Promise<Spot[]>{
     return await this.spotModel.findAll({ where: {estado: "Aceptado"}})
+  }
+
+  async borrarSpot(id: string): Promise<string>{
+    const spotABorrar: Spot = await this.findOne(id);
+    spotABorrar.isDeleted = true;
+    await spotABorrar.save();
+    return `Spot ${id} marcado como borrado`;
   }
 }
