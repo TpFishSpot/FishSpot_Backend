@@ -9,6 +9,7 @@ import {
   BadRequestException,
   Patch,
   Req,
+  Delete,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -127,5 +128,11 @@ export class SpotController {
   @Roles(UserRole.MODERATOR)
   rechazar(@Param('id') id: string): Promise<Spot> {
     return this.spotService.rechazar(id);
+  }
+
+  @Delete(':id')
+  @Roles(UserRole.MODERATOR)
+  async borrarSpot(@Param('id') id: string): Promise<string>{
+    return await this.spotService.borrarSpot(id);
   }
 }

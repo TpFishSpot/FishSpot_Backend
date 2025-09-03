@@ -89,6 +89,7 @@ CREATE TABLE "Spot" (
   "fechaPublicacion" DATE,
   "fechaActualizacion" DATE,
   "imagenPortada" VARCHAR(255),
+  "isDeleted" BOOLEAN NOT NULL DEFAULT FALSE,
   FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id"),
   FOREIGN KEY ("idUsuarioActualizo") REFERENCES "Usuario"("id")
 );
@@ -727,7 +728,7 @@ INSERT INTO "EspecieTipoPesca" ("id", "idEspecie", "idTipoPesca", "descripcion")
 ('etp77', 'es41', 'tp28', 'Pesca en Espejos: Solo captura y liberación, conservación extrema.');
 
 INSERT INTO "Spot" (
-  "id", "idUsuario", "idUsuarioActualizo", "nombre", "estado", "descripcion", "ubicacion", "fechaPublicacion", "fechaActualizacion", "imagenPortada"
+  "id", "idUsuario", "idUsuarioActualizo", "nombre", "estado", "descripcion", "ubicacion", "fechaPublicacion", "fechaActualizacion", "imagenPortada", "isDeleted"
 ) VALUES (
   'SpotSecreto',
   'usuario1',
@@ -741,7 +742,8 @@ INSERT INTO "Spot" (
   }'), 4326),
   CURRENT_DATE,
   CURRENT_DATE,
-  'uploads/taruchini.png'
+  'uploads/taruchini.png',
+  FALSE
 ),
 (
   'SpotParana',
@@ -756,7 +758,8 @@ INSERT INTO "Spot" (
   }'), 4326),
   CURRENT_DATE,
   CURRENT_DATE,
-  'uploads/dorado.png'
+  'uploads/dorado.png',
+  FALSE
 ),
 (
   'SpotDelta',
@@ -771,7 +774,8 @@ INSERT INTO "Spot" (
   }'), 4326),
   CURRENT_DATE,
   CURRENT_DATE,
-  'uploads/boga.png'
+  'uploads/boga.png',
+  FALSE
 ),
 (
   'SpotGeneral',
@@ -786,7 +790,8 @@ INSERT INTO "Spot" (
   }'), 4326),
   CURRENT_DATE,
   CURRENT_DATE,
-  'uploads/dorado.png'
+  'uploads/dorado.png',
+  FALSE
 );
 
 INSERT INTO "SpotEspecie" ("id", "idSpot", "idEspecie") VALUES
