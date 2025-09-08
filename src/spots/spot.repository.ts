@@ -12,7 +12,6 @@ import { Transaction } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { EstadoSpot } from 'src/models/EstadoSpot';
 
-
 @Injectable()
 export class SpotRepository {
   constructor(
@@ -28,7 +27,6 @@ export class SpotRepository {
     @InjectModel(SpotCarnadaEspecie)
     private readonly spotCarnadaEspecieModel: typeof SpotCarnadaEspecie,
   ) {}
-
 
   async create(spot: SpotCreationProps, options?: { transaction?: Transaction }) {
   return this.spotModel.create(spot, options);
@@ -79,7 +77,6 @@ export class SpotRepository {
     return this.spotModel.sequelize.transaction(async (t: Transaction) => {
       const nuevoSpot = await this.create(spot,{ transaction : t});
 
-      // Asociar especies
       if (especies.length) {
         await this.spotEspecieModel.bulkCreate(
           especies.map(idEspecie => ({

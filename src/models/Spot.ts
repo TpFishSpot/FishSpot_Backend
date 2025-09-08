@@ -9,7 +9,6 @@ import { EstadoSpot } from './EstadoSpot';
 import { Usuario } from './Usuario';
 import { Optional } from 'sequelize';
 
-
 export interface SpotProps{
   id: string;
   nombre: string;
@@ -25,7 +24,6 @@ export interface SpotProps{
 }
 
 export interface SpotCreationProps extends Optional<SpotProps, 'id'> {}
-
 
 @Table({ tableName: 'Spot', timestamps: false })
 export class Spot extends Model<SpotProps, SpotCreationProps> {

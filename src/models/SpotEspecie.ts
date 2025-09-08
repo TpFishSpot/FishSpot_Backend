@@ -14,12 +14,11 @@ export class SpotEspecie extends Model<SpotEspecie> {
     @BelongsTo(() => Spot)
     declare spot: Spot;
 
-    
     @ForeignKey(() => Especie)
     @Column
     declare idEspecie: string;
 
     @BelongsTo(() => Especie)
     declare especie: Especie;
-    
+
 }

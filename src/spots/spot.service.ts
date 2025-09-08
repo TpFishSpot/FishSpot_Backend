@@ -17,7 +17,6 @@ export class SpotService {
     private readonly spotRepository: SpotRepository,
     private readonly especieRepository: EspecieRepository,
     private readonly carnadaRepository: CarnadaRepository,
-    // STipoPescaRepository 
   ) {}
 
   async findAll(): Promise<Spot[]> {
@@ -61,10 +60,6 @@ export class SpotService {
 
       if (especies.length) {
         await this.especieRepository.bulkCreateSpotEspecie(spot.id, especies, t);
-      }
-
-      if (tiposPesca.length) {
-        // await this.tipoPescaRepository.bulkCreateSpotTipoPesca(spot.id, tiposPesca, t);
       }
 
       if (carnadas.length) {

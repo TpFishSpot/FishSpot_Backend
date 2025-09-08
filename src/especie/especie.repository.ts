@@ -14,14 +14,14 @@ import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
 export interface TipoPescaEspecieDto {
   id: string;
   nombre: string;
-  descripcion?: string; 
+  descripcion?: string;
 }
 
 @Injectable()
 export class EspecieRepository {
     constructor(
         @InjectModel(SpotCarnadaEspecie)
-        private readonly spotCarnadaEspecieModel: typeof SpotCarnadaEspecie,  
+        private readonly spotCarnadaEspecieModel: typeof SpotCarnadaEspecie,
         @InjectModel(Especie)
         private readonly especieModel: typeof Especie,
         @InjectModel(EspecieTipoPesca)
@@ -29,7 +29,7 @@ export class EspecieRepository {
         @InjectModel(SpotEspecie)
         private readonly spotEspecieModel: typeof SpotEspecie,
     ) {}
-    
+
     async findCarnadasByEspecie(idEspecie: string): Promise<Carnada[]> {
     const registros = await this.spotCarnadaEspecieModel.findAll({
       where: { idEspecie },
@@ -60,7 +60,7 @@ export class EspecieRepository {
       nombre_cientifico: especie.nombreCientifico,
       descripcion: especie.descripcion,
       imagen: especie.imagen,
-      nombre_comun: especie.nombresComunes?.map(n => n.nombre) || [], 
+      nombre_comun: especie.nombresComunes?.map(n => n.nombre) || [],
     };
   }
 

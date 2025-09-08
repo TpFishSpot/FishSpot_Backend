@@ -34,11 +34,11 @@ export class SpotDto {
 
   @IsOptional()
   @IsArray()
-  especies?: string[]; 
+  especies?: string[];
 
   @IsOptional()
   @IsArray()
-  tiposPesca?: string[]; 
+  tiposPesca?: string[];
 
   @IsOptional()
   @IsArray()

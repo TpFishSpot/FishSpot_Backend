@@ -18,7 +18,7 @@ export class UserService {
   ) {}
 
   async findOrCreateUser(uid: string, email: string, name?: string): Promise<Usuario> {
-    
+
     try {
       let user = await this.usuarioModel.findByPk(uid, {
         include: [
@@ -74,36 +74,36 @@ export class UserService {
     try {
       const userRoles = await this.usuarioRolModel.findAll({
         where: { usuarioId: uid },
-        include: [{ 
-          model: Rol, 
+        include: [{
+          model: Rol,
           attributes: ['id', 'nombre'],
-          required: true 
+          required: true
         }],
       });
-      
+
       if (userRoles.length === 0 || !userRoles[0].rol) {
         const roleIds = await this.usuarioRolModel.findAll({
           where: { usuarioId: uid },
           attributes: ['rolId'],
         });
-        
+
         if (roleIds.length === 0) {
           return [];
         }
-        
+
         const roles = await this.rolModel.findAll({
           where: { id: roleIds.map(r => r.rolId) },
           attributes: ['nombre'],
         });
-        
+
         const roleNames = roles.map(r => r.nombre);
         return roleNames;
       }
-      
+
       const roles = userRoles.map(ur => {
         return ur.rol?.nombre;
       }).filter(Boolean);
-      
+
       return roles;
     } catch (error) {
       throw error;

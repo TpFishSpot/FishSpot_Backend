@@ -1,16 +1,17 @@
-import { Table, Column, Model, DataType, BelongsToMany } from 'sequelize-typescript';
+import { Table, Column, Model, DataType, BelongsToMany, HasMany } from 'sequelize-typescript';
 import { NivelPescador } from './NivelPescador';
 import { Rol } from './Rol';
 import { UsuarioRol } from './UsuarioRol';
+import { Captura } from './Captura';
 
-@Table({ 
+@Table({
   tableName: 'Usuario',
-  timestamps: false // Deshabilita createdAt y updatedAt
+  timestamps: false
 })
 export class Usuario extends Model<Usuario> {
   @Column({
     primaryKey: true,
-    type: DataType.STRING, 
+    type: DataType.STRING,
   })
   declare id: string;
 
@@ -26,7 +27,7 @@ export class Usuario extends Model<Usuario> {
       'Experto',
       'Profesional'
     ),
-    field: 'nivelPescador', 
+    field: 'nivelPescador',
   })
   declare nivelPescador: NivelPescador;
 
@@ -38,4 +39,7 @@ export class Usuario extends Model<Usuario> {
 
   @BelongsToMany(() => Rol, () => UsuarioRol)
   declare roles: Array<Rol & { UsuarioRol: UsuarioRol }>;
+
+  @HasMany(() => Captura)
+  declare capturas: Captura[];
 }

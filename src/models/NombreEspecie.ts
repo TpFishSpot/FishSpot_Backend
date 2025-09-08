@@ -10,7 +10,7 @@ export class NombreEspecie extends Model<NombreEspecie>{
     @ForeignKey(() => Especie)
     @Column
     declare idEspecie: string;
-   
+
     @Column
     declare nombre: string;
 

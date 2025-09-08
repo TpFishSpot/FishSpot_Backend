@@ -2,7 +2,7 @@ import { Table, Column, Model, DataType, BelongsToMany } from 'sequelize-typescr
 import { Usuario } from './Usuario';
 import { UsuarioRol } from './UsuarioRol';
 
-@Table({ 
+@Table({
   tableName: 'Rol',
   timestamps: false,
 })

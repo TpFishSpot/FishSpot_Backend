@@ -9,6 +9,24 @@ import { Public } from 'src/auth/decorator';
 export class EspecieController {
   constructor(private readonly especieService: EspecieService) {}
 
+  @Get('debug/count')
+  @Public()
+  async getDebugCount(): Promise<any> {
+    try {
+      const especies = await this.especieService.getEspecies();
+      return {
+        totalEspecies: especies.length,
+        primerasEspecies: especies.slice(0, 5).map(e => ({
+          id: e.id,
+          nombre_cientifico: e.nombre_cientifico,
+          nombre_comun: e.nombre_comun?.slice(0, 2)
+        }))
+      };
+    } catch (error) {
+      return { error: error.message };
+    }
+  }
+
   @Get()
   @Public()
   async getEspecies(): Promise<EspecieConNombreComun[]> {
