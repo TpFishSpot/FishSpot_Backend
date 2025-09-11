@@ -8,7 +8,7 @@ import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
 import { TipoPesca } from 'src/models/TipoPesca';
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { EstadoSpot } from 'src/models/EstadoSpot';
 
@@ -142,4 +142,26 @@ export class SpotRepository {
     await spotABorrar.save();
     return `Spot ${id} marcado como borrado`;
   }
-}
+
+  
+async findAllByTiposPesca(tiposPesca: string[]): Promise<Spot[]> {
+  return this.spotModel.findAll({
+    where: { isDeleted: false },
+    include: [
+      {
+        model: SpotTipoPesca,
+        required: true, 
+        include: [
+          {
+            model: TipoPesca,
+            where: { 
+              [Op.or]: tiposPesca.map(tipo => ({
+                nombre: { [Op.iLike]: tipo }
+              }))
+            }, 
+          },
+        ],
+      },
+    ],
+  });
+}}

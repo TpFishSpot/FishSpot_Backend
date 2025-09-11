@@ -10,6 +10,7 @@ import {
   Patch,
   Req,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -30,6 +31,13 @@ import { UserRole } from 'src/auth/enums/roles.enum';
 @Controller('spot')
 export class SpotController {
   constructor(private readonly spotService: SpotService) {}
+
+  @Get('filtrar')
+  @Public()
+  filtrarPorTipoPesca(@Query('tipoPesca') tipoPesca?: string): Promise<Spot[]> {
+    const tipos = tipoPesca ? tipoPesca.split(',') : [];
+    return this.spotService.findAll(tipos);
+  }
 
   @Get()
   @Public()
@@ -62,7 +70,7 @@ export class SpotController {
 
   @Get('/:id/tipoPesca')
   @Public()
-  findAllTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
+  findSpotTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
     return this.spotService.findAllTipoPesca(id);
   }
 

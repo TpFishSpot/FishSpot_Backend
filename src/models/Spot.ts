@@ -4,12 +4,14 @@ import {
   Model,
   DataType,
   ForeignKey,
+  HasMany,
 } from 'sequelize-typescript';
+import { Optional } from 'sequelize';
 import { EstadoSpot } from './EstadoSpot';
 import { Usuario } from './Usuario';
-import { Optional } from 'sequelize';
+import { SpotTipoPesca } from './SpotTipoPesca';
 
-export interface SpotProps{
+export interface SpotProps {
   id: string;
   nombre: string;
   descripcion: string;
@@ -34,7 +36,8 @@ export class Spot extends Model<SpotProps, SpotCreationProps> {
   declare nombre: string;
 
   @Column({
-    type: DataType.ENUM('Esperando', 'Aceptado', 'Rechazado', 'Inactivo'), field: 'estado'
+    type: DataType.ENUM('Esperando', 'Aceptado', 'Rechazado', 'Inactivo'),
+    field: 'estado',
   })
   declare estado: EstadoSpot;
 
@@ -58,15 +61,12 @@ export class Spot extends Model<SpotProps, SpotCreationProps> {
   @Column
   declare idUsuarioActualizo: string;
 
-  @Column({
-    type: DataType.STRING,
-    allowNull: true,
-  })
+  @Column({ type: DataType.STRING, allowNull: true })
   declare imagenPortada?: string;
 
-  @Column({
-    type: DataType.BOOLEAN,
-    defaultValue: false,
-  })
+  @Column({ type: DataType.BOOLEAN, defaultValue: false })
   declare isDeleted: boolean;
+
+  @HasMany(() => SpotTipoPesca, 'idSpot')
+  tiposPesca: SpotTipoPesca[];
 }
