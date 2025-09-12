@@ -11,12 +11,16 @@ import {
   Req,
   Delete,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { SpotService } from './spot.service';
 import { SpotDto } from 'src/dto/SpotDto';
+import { FiltroSpotDto } from 'src/dto/FiltroSpotDto';
+import { ParamIdDto } from 'src/dto/ValidationDto';
 import { Spot } from 'src/models/Spot';
 import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
@@ -34,27 +38,23 @@ export class SpotController {
 
   @Get('filtrar')
   @Public()
-  filtrarPorTipoPesca(@Query('tipoPesca') tipoPesca?: string): Promise<Spot[]> {
-    const tipos = tipoPesca ? tipoPesca.split(',') : [];
-    return this.spotService.findAll(tipos);
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  filtrarPorTipoPesca(@Query() filtros: FiltroSpotDto): Promise<Spot[]> {
+    return this.spotService.findAll(filtros.tiposPescaArray);
   }
 
   @Get('filtrar-especies')
   @Public()
-  filtrarPorEspecies(@Query('especies') especies?: string): Promise<Spot[]> {
-    const especiesList = especies ? especies.split(',') : [];
-    return this.spotService.findAll([], especiesList);
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  filtrarPorEspecies(@Query() filtros: FiltroSpotDto): Promise<Spot[]> {
+    return this.spotService.findAll([], filtros.especiesArray);
   }
 
   @Get('filtrar-completo')
   @Public()
-  filtrarCompleto(
-    @Query('tipoPesca') tipoPesca?: string,
-    @Query('especies') especies?: string
-  ): Promise<Spot[]> {
-    const tipos = tipoPesca ? tipoPesca.split(',') : [];
-    const especiesList = especies ? especies.split(',') : [];
-    return this.spotService.findAll(tipos, especiesList);
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  filtrarCompleto(@Query() filtros: FiltroSpotDto): Promise<Spot[]> {
+    return this.spotService.findAll(filtros.tiposPescaArray, filtros.especiesArray);
   }
 
   @Get()
@@ -76,8 +76,9 @@ export class SpotController {
 
   @Get(':id')
   @Public()
-  find(@Param('id') id: string): Promise<Spot> {
-    return this.spotService.find(id);
+  @UsePipes(new ValidationPipe({ transform: true }))
+  find(@Param() params: ParamIdDto): Promise<Spot> {
+    return this.spotService.find(params.id);
   }
 
   @Get('/:id/especies')
