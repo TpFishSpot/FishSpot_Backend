@@ -19,13 +19,26 @@ export class SpotService {
     private readonly carnadaRepository: CarnadaRepository,
   ) {}
 
- async findAll(tiposPesca: string[] = []): Promise<Spot[]> {
+ async findAll(tiposPesca: string[] = [], especies: string[] = []): Promise<Spot[]> {
+  if (tiposPesca.length > 0 && especies.length > 0) {
+    const spotsPorTipo = await this.spotRepository.findAllByTiposPesca(tiposPesca);
+    const spotsPorEspecie = await this.spotRepository.findAllByEspecies(especies);
+    
+    const idsSpotsPorTipo = new Set(spotsPorTipo.map(spot => spot.id));
+    return spotsPorEspecie.filter(spot => idsSpotsPorTipo.has(spot.id));
+  }
+  
   if (tiposPesca.length > 0) {
     return this.spotRepository.findAllByTiposPesca(tiposPesca);
   }
-  return this.spotRepository.findAll();
+  
+  if (especies.length > 0) {
+    return this.spotRepository.findAllByEspecies(especies);
   }
   
+  return this.spotRepository.findAll();
+  }
+
   async agregarSpot(
     spotDto: SpotDto,
     imagenPath?: string,

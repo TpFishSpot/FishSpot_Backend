@@ -39,6 +39,24 @@ export class SpotController {
     return this.spotService.findAll(tipos);
   }
 
+  @Get('filtrar-especies')
+  @Public()
+  filtrarPorEspecies(@Query('especies') especies?: string): Promise<Spot[]> {
+    const especiesList = especies ? especies.split(',') : [];
+    return this.spotService.findAll([], especiesList);
+  }
+
+  @Get('filtrar-completo')
+  @Public()
+  filtrarCompleto(
+    @Query('tipoPesca') tipoPesca?: string,
+    @Query('especies') especies?: string
+  ): Promise<Spot[]> {
+    const tipos = tipoPesca ? tipoPesca.split(',') : [];
+    const especiesList = especies ? especies.split(',') : [];
+    return this.spotService.findAll(tipos, especiesList);
+  }
+
   @Get()
   @Public()
   findAll(): Promise<Spot[]> {

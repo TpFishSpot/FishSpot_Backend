@@ -164,4 +164,52 @@ async findAllByTiposPesca(tiposPesca: string[]): Promise<Spot[]> {
       },
     ],
   });
-}}
+}
+
+async findAllByEspecies(especies: string[]): Promise<Spot[]> {
+  // Primero, buscar especies que coincidan con los nombres (científicos o comunes)
+  const especiesIds = await Especie.findAll({
+    include: [
+      {
+        model: NombreEspecie,
+        required: false
+      }
+    ],
+    where: {
+      [Op.or]: [
+        // Buscar por nombre científico
+        { nombreCientifico: { [Op.in]: especies } },
+        // Buscar por cualquier nombre común
+        { '$NombreEspecies.nombre$': { [Op.in]: especies } }
+      ]
+    }
+  });
+
+  const idsEspecies = especiesIds.map(especie => especie.id);
+
+  if (idsEspecies.length === 0) {
+    return [];
+  }
+
+  // Luego buscar spots que tengan esas especies
+  return this.spotModel.findAll({
+    where: { isDeleted: false },
+    include: [
+      {
+        model: SpotEspecie,
+        required: true,
+        where: {
+          idEspecie: { [Op.in]: idsEspecies }
+        },
+        include: [
+          {
+            model: Especie,
+            include: [NombreEspecie]
+          }
+        ]
+      }
+    ]
+  });
+}
+
+}

@@ -10,6 +10,7 @@ import { Optional } from 'sequelize';
 import { EstadoSpot } from './EstadoSpot';
 import { Usuario } from './Usuario';
 import { SpotTipoPesca } from './SpotTipoPesca';
+import { SpotEspecie } from './SpotEspecie';
 
 export interface SpotProps {
   id: string;
@@ -69,4 +70,7 @@ export class Spot extends Model<SpotProps, SpotCreationProps> {
 
   @HasMany(() => SpotTipoPesca, 'idSpot')
   tiposPesca: SpotTipoPesca[];
+
+  @HasMany(() => SpotEspecie, 'idSpot')
+  especies: SpotEspecie[];
 }
