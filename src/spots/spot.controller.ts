@@ -10,6 +10,7 @@ import {
   Patch,
   Req,
   Delete,
+  Query,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -33,8 +34,11 @@ export class SpotController {
 
   @Get()
   @Public()
-  findAll(): Promise<Spot[]> {
-    return this.spotService.findAll();
+  async findSpots(@Query('idUsuario') idUsuario?: string): Promise<Spot[]> {
+    if (idUsuario) {
+      return await this.spotService.getSpotsByUser(idUsuario);
+    }
+    return await this.spotService.findAll();
   }
 
   @Get('esperando')
@@ -131,8 +135,11 @@ export class SpotController {
   }
 
   @Delete(':id')
-  @Roles(UserRole.MODERATOR)
-  async borrarSpot(@Param('id') id: string): Promise<string>{
-    return await this.spotService.borrarSpot(id);
+  async borrarSpot(
+    @Param('id') id: string,
+    @Req() req: RequestWithUser,
+  ): Promise<string> {
+    const idUsuario = req.user.uid;
+    return this.spotService.borrarSpot(id, idUsuario);
   }
 }

@@ -4,6 +4,7 @@ import { Usuario } from 'src/models/Usuario';
 import { UsuarioRol } from 'src/models/UsuarioRol';
 import { Rol } from 'src/models/Rol';
 import { error } from 'console';
+import { ActualizarUsuarioDto } from 'src/dto/ActualizarUsuarioDto';
 
 @Injectable()
 export class UsuarioRepository {
@@ -93,5 +94,23 @@ export class UsuarioRepository {
     } catch (error) {
       throw error;
     }
+  }
+
+  async actualizarUsuario(id: string, body: any) {
+    const usuario = await this.usuarioModel.findByPk(id);
+    if (!usuario) throw new NotFoundException('Usuario no encontrado');
+    await usuario.update(body);
+    return usuario;
+  }
+
+  async findOne(id: string): Promise<Usuario> {
+    const usuario = await this.usuarioModel.findOne({
+      where: { id },
+      include: [Rol],
+    }); 
+    if (!usuario) {
+      throw new NotFoundException('Usuario no encontrado');
+    }
+    return usuario;
   }
 }
