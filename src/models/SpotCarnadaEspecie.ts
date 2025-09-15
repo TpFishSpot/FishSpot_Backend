@@ -23,7 +23,7 @@ export class SpotCarnadaEspecie extends Model<SpotCarnadaEspecie> {
   declare idCarnada: string;
 
   @ForeignKey(() => Especie)
-  @Column({ type: DataType.UUID, allowNull: false })
+  @Column({ type: DataType.STRING, allowNull: false })
   declare idEspecie: string;
 
   @BelongsTo(() => Spot)

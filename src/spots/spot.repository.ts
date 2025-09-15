@@ -8,7 +8,7 @@ import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
 import { TipoPesca } from 'src/models/TipoPesca';
-import { Transaction } from 'sequelize';
+import { Op, Transaction } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { EstadoSpot } from 'src/models/EstadoSpot';
 
@@ -142,4 +142,74 @@ export class SpotRepository {
     await spotABorrar.save();
     return `Spot ${id} marcado como borrado`;
   }
+
+  
+async findAllByTiposPesca(tiposPesca: string[]): Promise<Spot[]> {
+  return this.spotModel.findAll({
+    where: { isDeleted: false },
+    include: [
+      {
+        model: SpotTipoPesca,
+        required: true, 
+        include: [
+          {
+            model: TipoPesca,
+            where: { 
+              [Op.or]: tiposPesca.map(tipo => ({
+                nombre: { [Op.iLike]: tipo }
+              }))
+            }, 
+          },
+        ],
+      },
+    ],
+  });
+}
+
+async findAllByEspecies(especies: string[]): Promise<Spot[]> {
+  // Primero, buscar especies que coincidan con los nombres (científicos o comunes)
+  const especiesIds = await Especie.findAll({
+    include: [
+      {
+        model: NombreEspecie,
+        required: false
+      }
+    ],
+    where: {
+      [Op.or]: [
+        // Buscar por nombre científico
+        { nombreCientifico: { [Op.in]: especies } },
+        // Buscar por cualquier nombre común
+        { '$NombreEspecies.nombre$': { [Op.in]: especies } }
+      ]
+    }
+  });
+
+  const idsEspecies = especiesIds.map(especie => especie.id);
+
+  if (idsEspecies.length === 0) {
+    return [];
+  }
+
+  // Luego buscar spots que tengan esas especies
+  return this.spotModel.findAll({
+    where: { isDeleted: false },
+    include: [
+      {
+        model: SpotEspecie,
+        required: true,
+        where: {
+          idEspecie: { [Op.in]: idsEspecies }
+        },
+        include: [
+          {
+            model: Especie,
+            include: [NombreEspecie]
+          }
+        ]
+      }
+    ]
+  });
+}
+
 }
