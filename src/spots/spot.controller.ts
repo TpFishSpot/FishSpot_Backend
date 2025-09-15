@@ -20,7 +20,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { SpotService } from './spot.service';
 import { SpotDto } from 'src/dto/SpotDto';
 import { FiltroSpotDto } from 'src/dto/FiltroSpotDto';
-import { ParamIdDto } from 'src/dto/ValidationDto';
+import { ParamIdDto, FlexibleIdDto } from 'src/dto/ValidationDto';
 import { Spot } from 'src/models/Spot';
 import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
@@ -77,7 +77,7 @@ export class SpotController {
   @Get(':id')
   @Public()
   @UsePipes(new ValidationPipe({ transform: true }))
-  find(@Param() params: ParamIdDto): Promise<Spot> {
+  find(@Param() params: FlexibleIdDto): Promise<Spot> {
     return this.spotService.find(params.id);
   }
 

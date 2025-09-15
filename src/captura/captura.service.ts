@@ -9,19 +9,56 @@ export class CapturaService {
   constructor(private readonly capturaRepository: CapturaRepository) {}
 
   async findAll(): Promise<Captura[]> {
-    return this.capturaRepository.findAll();
+    const capturas = await this.capturaRepository.findAll();
+    
+    
+    return capturas.map(captura => {
+      const capturaJson = captura.toJSON();
+      return {
+        ...capturaJson,
+        peso: capturaJson.peso ? parseFloat(capturaJson.peso.toString()) : null,
+        longitud: capturaJson.longitud ? parseFloat(capturaJson.longitud.toString()) : null,
+      } as Captura;
+    });
   }
 
   async findOne(id: string): Promise<Captura> {
-    return this.capturaRepository.findOne(id);
+    const captura = await this.capturaRepository.findOne(id);
+    
+   
+    const capturaJson = captura.toJSON();
+    return {
+      ...capturaJson,
+      peso: capturaJson.peso ? parseFloat(capturaJson.peso.toString()) : null,
+      longitud: capturaJson.longitud ? parseFloat(capturaJson.longitud.toString()) : null,
+    } as Captura;
   }
 
   async findByUsuario(idUsuario: string): Promise<Captura[]> {
-    return this.capturaRepository.findByUsuario(idUsuario);
+    const capturas = await this.capturaRepository.findByUsuario(idUsuario);
+    
+    return capturas.map(captura => {
+      const capturaJson = captura.toJSON();
+      return {
+        ...capturaJson,
+        peso: capturaJson.peso ? parseFloat(capturaJson.peso.toString()) : null,
+        longitud: capturaJson.longitud ? parseFloat(capturaJson.longitud.toString()) : null,
+      } as Captura;
+    });
   }
 
   async findByEspecie(especieId: string): Promise<Captura[]> {
-    return this.capturaRepository.findByEspecie(especieId);
+    const capturas = await this.capturaRepository.findByEspecie(especieId);
+    
+
+    return capturas.map(captura => {
+      const capturaJson = captura.toJSON();
+      return {
+        ...capturaJson,
+        peso: capturaJson.peso ? parseFloat(capturaJson.peso.toString()) : null,
+        longitud: capturaJson.longitud ? parseFloat(capturaJson.longitud.toString()) : null,
+      } as Captura;
+    });
   }
 
   async create(

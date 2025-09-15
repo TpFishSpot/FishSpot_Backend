@@ -6,6 +6,16 @@ export class ParamIdDto {
   id: string;
 }
 
+export class FlexibleIdDto {
+  @IsString({ message: 'El ID debe ser una cadena válida' })
+  @MaxLength(100, { message: 'El ID no puede exceder 100 caracteres' })
+  @Matches(/^[a-zA-Z0-9_-]+$/, { 
+    message: 'El ID solo puede contener letras, números, guiones y guiones bajos' 
+  })
+  @Transform(({ value }) => value?.trim())
+  id: string;
+}
+
 export class QueryUsuarioDto {
   @IsOptional()
   @IsUUID(4, { message: 'El ID de usuario debe ser un UUID válido' })

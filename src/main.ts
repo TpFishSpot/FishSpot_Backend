@@ -18,10 +18,12 @@ async function bootstrap() {
         defaultSrc: ["'self'"],
         styleSrc: ["'self'", "'unsafe-inline'"],
         scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "https:"],
+        imgSrc: ["'self'", "data:", "blob:", "http:", "https:"],
+        connectSrc: ["'self'", "http:", "https:"],
       },
     },
-    crossOriginEmbedderPolicy: false, 
+    crossOriginEmbedderPolicy: false,
+    crossOriginResourcePolicy: { policy: "cross-origin" },
   }));
   app.use(compression());
 
@@ -39,6 +41,12 @@ async function bootstrap() {
 
   app.useStaticAssets(resolve(process.cwd(), 'uploads'), {
     prefix: '/uploads/',
+    setHeaders: (res, path) => {
+      res.setHeader('Access-Control-Allow-Origin', '*');
+      res.setHeader('Access-Control-Allow-Methods', 'GET');
+      res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+      res.setHeader('Cross-Origin-Resource-Policy', 'cross-origin');
+    },
   });
 
   app.useGlobalPipes(new ValidationPipe({

@@ -17,7 +17,7 @@ export class EspecieTipoPesca extends Model {
 
   @ForeignKey(() => Especie)
   @Column({
-    type: DataType.UUID,
+    type: DataType.STRING,
     allowNull: false,
     field: "idEspecie",
   })

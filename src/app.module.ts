@@ -20,23 +20,22 @@ import { TipoPescaModule } from './tipopesca/tipopesca.module';
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
-    
-    // Rate limiting configurado por endpoint
+
     ThrottlerModule.forRoot([
       {
         name: 'default',
-        ttl: 60000, // 1 minuto
-        limit: 100, // 100 requests por minuto por IP
+        ttl: 60000,
+        limit: 500, 
       },
       {
         name: 'auth',
-        ttl: 900000, // 15 minutos 
-        limit: 5, // Solo 5 intentos de login por 15 minutos
+        ttl: 900000,   
+        limit: 10, 
       },
       {
         name: 'uploads',
-        ttl: 60000, // 1 minuto
-        limit: 10, // 10 uploads por minuto
+        ttl: 60000, 
+        limit: 20, 
       }
     ]),
     
@@ -65,7 +64,6 @@ import { TipoPescaModule } from './tipopesca/tipopesca.module';
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    // Aplicar middleware de seguridad a todas las rutas
     consumer
       .apply(SecurityMiddleware)
       .forRoutes('*');

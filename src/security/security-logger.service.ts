@@ -18,29 +18,24 @@ export interface SecurityEvent {
 export class SecurityLogger {
   private readonly logger = new Logger('Security');
   private readonly securityEvents: SecurityEvent[] = [];
-  private readonly MAX_EVENTS = 10000; // Mantener solo los últimos 10k eventos
-
+  private readonly MAX_EVENTS = 10000;
   logSecurityEvent(event: Omit<SecurityEvent, 'timestamp'>) {
     const fullEvent: SecurityEvent = {
       ...event,
       timestamp: new Date(),
     };
 
-    // Agregar al array de eventos
+   
     this.securityEvents.push(fullEvent);
-    
-    // Mantener solo los eventos más recientes
+
     if (this.securityEvents.length > this.MAX_EVENTS) {
       this.securityEvents.shift();
     }
-
-    // Log basado en severidad
     const logMessage = `[${event.type}] ${event.message} | IP: ${event.ip} | Endpoint: ${event.endpoint}`;
     
     switch (event.severity) {
       case 'CRITICAL':
         this.logger.error(`🚨 CRITICAL: ${logMessage}`, JSON.stringify(fullEvent));
-        // En producción, aquí podrías enviar alertas por email o Slack
         break;
       case 'HIGH':
         this.logger.error(`🔴 HIGH: ${logMessage}`);
@@ -52,8 +47,6 @@ export class SecurityLogger {
         this.logger.log(`🟢 LOW: ${logMessage}`);
         break;
     }
-
-    // Si hay múltiples eventos del mismo IP, aumentar la severidad
     this.checkForRepeatedAttacks(event.ip, event.type);
   }
 
@@ -113,7 +106,7 @@ export class SecurityLogger {
       event => 
         event.ip === ip && 
         event.type === type && 
-        Date.now() - event.timestamp.getTime() < 300000 // Últimos 5 minutos
+        Date.now() - event.timestamp.getTime() < 300000 
     );
 
     if (recentEvents.length >= 5) {
