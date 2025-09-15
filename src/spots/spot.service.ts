@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { SpotRepository } from './spot.repository';
 import { SpotDto } from 'src/dto/SpotDto';
 import { Spot } from 'src/models/Spot';
-import { Sequelize } from 'sequelize';
+import {  Sequelize } from 'sequelize';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 import { v4 as uuidv4 } from 'uuid';
@@ -19,8 +19,24 @@ export class SpotService {
     private readonly carnadaRepository: CarnadaRepository,
   ) {}
 
-  async findAll(): Promise<Spot[]> {
-    return this.spotRepository.findAll();
+ async findAll(tiposPesca: string[] = [], especies: string[] = []): Promise<Spot[]> {
+  if (tiposPesca.length > 0 && especies.length > 0) {
+    const spotsPorTipo = await this.spotRepository.findAllByTiposPesca(tiposPesca);
+    const spotsPorEspecie = await this.spotRepository.findAllByEspecies(especies);
+    
+    const idsSpotsPorTipo = new Set(spotsPorTipo.map(spot => spot.id));
+    return spotsPorEspecie.filter(spot => idsSpotsPorTipo.has(spot.id));
+  }
+  
+  if (tiposPesca.length > 0) {
+    return this.spotRepository.findAllByTiposPesca(tiposPesca);
+  }
+  
+  if (especies.length > 0) {
+    return this.spotRepository.findAllByEspecies(especies);
+  }
+  
+  return this.spotRepository.findAll();
   }
 
   async agregarSpot(

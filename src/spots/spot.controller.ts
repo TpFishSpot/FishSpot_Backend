@@ -11,12 +11,16 @@ import {
   Req,
   Delete,
   Query,
+  UsePipes,
+  ValidationPipe,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { v4 as uuidv4 } from 'uuid';
 import { SpotService } from './spot.service';
 import { SpotDto } from 'src/dto/SpotDto';
+import { FiltroSpotDto } from 'src/dto/FiltroSpotDto';
+import { ParamIdDto, FlexibleIdDto } from 'src/dto/ValidationDto';
 import { Spot } from 'src/models/Spot';
 import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
@@ -31,6 +35,27 @@ import { UserRole } from 'src/auth/enums/roles.enum';
 @Controller('spot')
 export class SpotController {
   constructor(private readonly spotService: SpotService) {}
+
+  @Get('filtrar')
+  @Public()
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  filtrarPorTipoPesca(@Query() filtros: FiltroSpotDto): Promise<Spot[]> {
+    return this.spotService.findAll(filtros.tiposPescaArray);
+  }
+
+  @Get('filtrar-especies')
+  @Public()
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  filtrarPorEspecies(@Query() filtros: FiltroSpotDto): Promise<Spot[]> {
+    return this.spotService.findAll([], filtros.especiesArray);
+  }
+
+  @Get('filtrar-completo')
+  @Public()
+  @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))
+  filtrarCompleto(@Query() filtros: FiltroSpotDto): Promise<Spot[]> {
+    return this.spotService.findAll(filtros.tiposPescaArray, filtros.especiesArray);
+  }
 
   @Get()
   @Public()
@@ -54,8 +79,9 @@ export class SpotController {
 
   @Get(':id')
   @Public()
-  find(@Param('id') id: string): Promise<Spot> {
-    return this.spotService.find(id);
+  @UsePipes(new ValidationPipe({ transform: true }))
+  find(@Param() params: FlexibleIdDto): Promise<Spot> {
+    return this.spotService.find(params.id);
   }
 
   @Get('/:id/especies')
@@ -66,7 +92,7 @@ export class SpotController {
 
   @Get('/:id/tipoPesca')
   @Public()
-  findAllTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
+  findSpotTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
     return this.spotService.findAllTipoPesca(id);
   }
 
