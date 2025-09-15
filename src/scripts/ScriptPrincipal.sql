@@ -54,8 +54,10 @@ CREATE TABLE "Usuario" (
   "id" VARCHAR(255) PRIMARY KEY,
   "nombre" VARCHAR(50) NOT NULL,
   "nivelPescador" "NivelPescador",
-  "email" VARCHAR(50) NOT NULL
+  "email" VARCHAR(50) NOT NULL,
+  "foto" VARCHAR(255)
 );
+
 
 CREATE TABLE "Rol" (
   "id" VARCHAR(255) PRIMARY KEY,
@@ -1249,4 +1251,5 @@ UNION ALL
 SELECT 'CAPTURAS' as tabla, COUNT(*) as registros FROM "Captura"
 ORDER BY tabla;
 
-
+-- ALTER TABLE "Usuario"
+-- ADD COLUMN "foto" VARCHAR(255) NULL;

@@ -37,6 +37,12 @@ export class Usuario extends Model<Usuario> {
   })
   declare email: string;
 
+  @Column({
+    type: DataType.STRING,
+    allowNull: true,
+  })
+  declare foto: string | null;
+
   @BelongsToMany(() => Rol, () => UsuarioRol)
   declare roles: Array<Rol & { UsuarioRol: UsuarioRol }>;
 

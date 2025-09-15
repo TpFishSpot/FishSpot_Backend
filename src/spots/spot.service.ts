@@ -117,7 +117,11 @@ export class SpotService {
     return await this.spotRepository.filtrarAceptados();
   }
 
-  async borrarSpot(id: string): Promise<string>{
-    return await this.spotRepository.borrarSpot(id);
+  async borrarSpot(id: string, idUsuarioSolicitante: string): Promise<string>{
+    return await this.spotRepository.borrarSpot(id, idUsuarioSolicitante);
+  }
+
+  async getSpotsByUser(idUsuario: string): Promise<Spot[]> {
+    return await this.spotRepository.findByUser(idUsuario);
   }
 }

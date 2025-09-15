@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/sequelize';
 import { Spot, SpotCreationProps } from 'src/models/Spot';
 import { SpotEspecie } from 'src/models/SpotEspecie';
@@ -136,35 +136,44 @@ export class SpotRepository {
     return await this.spotModel.findAll({ where: {estado: "Aceptado"}})
   }
 
-  async borrarSpot(id: string): Promise<string>{
+  async borrarSpot(id: string, idUsuarioSolicitante: string): Promise<string>{
     const spotABorrar: Spot = await this.findOne(id);
+    if (spotABorrar.idUsuario !== idUsuarioSolicitante) {
+      throw new ForbiddenException('No puedes borrar un spot que no creaste');
+    }
+    if (spotABorrar.estado !== EstadoSpot.Esperando) {
+      throw new BadRequestException('Solo puedes borrar spots pendientes');
+    }
     spotABorrar.isDeleted = true;
     await spotABorrar.save();
     return `Spot ${id} marcado como borrado`;
   }
+  async findByUser(idUsuario: string): Promise<Spot[]> {
+    return await this.spotModel.findAll({ where: { idUsuario: idUsuario, isDeleted: false } });
+  }
 
   
-async findAllByTiposPesca(tiposPesca: string[]): Promise<Spot[]> {
-  return this.spotModel.findAll({
-    where: { isDeleted: false },
-    include: [
-      {
-        model: SpotTipoPesca,
-        required: true, 
-        include: [
-          {
-            model: TipoPesca,
-            where: { 
-              [Op.or]: tiposPesca.map(tipo => ({
-                nombre: { [Op.iLike]: tipo }
-              }))
-            }, 
-          },
-        ],
-      },
-    ],
-  });
-}
+  async findAllByTiposPesca(tiposPesca: string[]): Promise<Spot[]> {
+    return this.spotModel.findAll({
+      where: { isDeleted: false },
+      include: [
+        {
+          model: SpotTipoPesca,
+          required: true, 
+          include: [
+            {
+              model: TipoPesca,
+              where: { 
+                [Op.or]: tiposPesca.map(tipo => ({
+                  nombre: { [Op.iLike]: tipo }
+                }))
+              }, 
+            },
+          ],
+        },
+      ],
+    });
+  }
 
 async findAllByEspecies(especies: string[]): Promise<Spot[]> {
   // Primero, buscar especies que coincidan con los nombres (científicos o comunes)

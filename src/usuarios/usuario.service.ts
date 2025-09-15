@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Usuario } from 'src/models/Usuario';
 import { UsuarioRepository } from './usuario.repository';
+import { ActualizarUsuarioDto } from 'src/dto/ActualizarUsuarioDto';
 
 @Injectable()
 export class UsuarioService {
@@ -16,5 +17,15 @@ export class UsuarioService {
   }
   async rolesDelUsuario(uid: string):Promise<string[]>{
     return await this.usuarioRepository.getUserRoles(uid);
+  }
+
+  async actualizarUsuario(id: string, body: ActualizarUsuarioDto, foto?: Express.Multer.File) {
+    if (foto) {
+      body.foto = `${process.env.direccionDeFoto}/${foto.filename}`;
+    }
+    return await this.usuarioRepository.actualizarUsuario(id, body);
+  }
+  async findOne(id: string): Promise<Usuario> {
+    return await this.usuarioRepository.findOne(id);
   }
 }
