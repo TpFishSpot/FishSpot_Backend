@@ -21,23 +21,23 @@ import { TipoPescaModule } from './tipopesca/tipopesca.module';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
 
-    ThrottlerModule.forRoot([
-      {
-        name: 'default',
-        ttl: 60000,
-        limit: 500, 
-      },
-      {
-        name: 'auth',
-        ttl: 900000,   
-        limit: 10, 
-      },
-      {
-        name: 'uploads',
-        ttl: 60000, 
-        limit: 20, 
-      }
-    ]),
+   ThrottlerModule.forRoot([
+  {
+    name: 'default',
+    ttl: 60000,        
+    limit: 1000,       
+  },
+  {
+    name: 'auth',
+    ttl: 300000,       
+    limit: 20,        
+  },
+  {
+    name: 'uploads',
+    ttl: 60000,        
+    limit: 50,         
+  }
+]),
     
     DatabaseModule,
     AuthModule,

@@ -50,4 +50,16 @@ export class EspecieController {
   async getTipoPesca( @Param('id') idEspecie: string): Promise<TipoPescaEspecieDto[]> {
     return this.especieService.getTiposPescaByEspecie(idEspecie);
   }
+
+  @Get(':id/complete')
+  @Public()
+  async getEspecieComplete(@Param('id') idEspecie: string) {
+    const [especie, carnadas, tiposPesca] = await Promise.all([
+      this.especieService.findOne(idEspecie),
+      this.especieService.findCarnadasRecomendadas(idEspecie),
+      this.especieService.getTiposPescaByEspecie(idEspecie)
+    ]);
+
+    return { especie, carnadas, tiposPesca };
+  }
 }

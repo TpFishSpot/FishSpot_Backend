@@ -42,7 +42,30 @@ export class SpotController {
   filtrarPorTipoPesca(@Query() filtros: FiltroSpotDto): Promise<Spot[]> {
     return this.spotService.findAll(filtros.tiposPescaArray);
   }
+  
+  @Get(':id/complete')
+  @Public()
+  @UsePipes(new ValidationPipe({ transform: true }))
+  async findComplete(@Param() params: FlexibleIdDto) {
+    try {
+      const [spot, especies, tiposPesca] = await Promise.all([
+        this.spotService.find(params.id),
+        this.spotService.findAllEspecies(params.id),
+        this.spotService.findAllTipoPesca(params.id)
+      ]);
 
+      return {
+        spot,
+        especies,
+        tiposPesca,
+        timestamp: new Date().toISOString(),
+        cached: false
+      };
+    } catch (error) {
+      throw new BadRequestException(`Error fetching complete spot data: ${error.message}`);
+    }
+  }
+ 
   @Get('filtrar-especies')
   @Public()
   @UsePipes(new ValidationPipe({ transform: true, whitelist: true }))

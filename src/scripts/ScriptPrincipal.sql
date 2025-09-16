@@ -1253,3 +1253,6 @@ ORDER BY tabla;
 
 -- ALTER TABLE "Usuario"
 -- ADD COLUMN "foto" VARCHAR(255) NULL;
+
+
+select * from "Usuario";
