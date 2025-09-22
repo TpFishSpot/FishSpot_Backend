@@ -25,17 +25,17 @@ import { TipoPescaModule } from './tipopesca/tipopesca.module';
   {
     name: 'default',
     ttl: 60000,        
-    limit: 1000,       
+    limit: 10000,       
   },
   {
     name: 'auth',
     ttl: 300000,       
-    limit: 20,        
+    limit: 20000,        
   },
   {
     name: 'uploads',
     ttl: 60000,        
-    limit: 50,         
+    limit: 50000,         
   }
 ]),
     

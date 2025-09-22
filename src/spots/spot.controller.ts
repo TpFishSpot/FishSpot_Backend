@@ -26,7 +26,7 @@ import { extname } from 'path';
 import { plainToInstance } from 'class-transformer';
 import { validate } from 'class-validator';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
-import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
+import { TipoPesca } from 'src/models/TipoPesca';
 import { Carnada } from 'src/models/Carnada';
 import { Roles, Public } from 'src/auth/decorator';
 import { RequestWithUser } from 'src/auth/interfaces/auth.interface';
@@ -51,7 +51,7 @@ export class SpotController {
       const [spot, especies, tiposPesca] = await Promise.all([
         this.spotService.find(params.id),
         this.spotService.findAllEspecies(params.id),
-        this.spotService.findAllTipoPesca(params.id)
+        this.spotService.findAllTipoPesca(params.id),
       ]);
 
       return {
@@ -115,7 +115,7 @@ export class SpotController {
 
   @Get('/:id/tipoPesca')
   @Public()
-  findSpotTipoPesca(@Param('id') id: string): Promise<SpotTipoPesca[]> {
+  findSpotTipoPesca(@Param('id') id: string): Promise<TipoPesca[]> {
     return this.spotService.findAllTipoPesca(id);
   }
 

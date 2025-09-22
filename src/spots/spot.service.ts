@@ -4,7 +4,7 @@ import { SpotDto } from 'src/dto/SpotDto';
 import { Spot } from 'src/models/Spot';
 import {  Sequelize } from 'sequelize';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
-import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
+import { TipoPesca } from 'src/models/TipoPesca';
 import { v4 as uuidv4 } from 'uuid';
 import { EspecieRepository } from 'src/especie/especie.repository';
 import { CarnadaRepository } from 'src/carnada/carnada.repository';
@@ -94,8 +94,9 @@ export class SpotService {
     return this.spotRepository.obtenerEspeciesPorSpot(id);
   }
 
-  async findAllTipoPesca(id: string): Promise<SpotTipoPesca[]> {
-    return this.spotRepository.obtenerTipoPesca(id);
+  async findAllTipoPesca(id: string): Promise<TipoPesca[]> {
+    const spotTiposPesca = await this.spotRepository.obtenerTipoPesca(id);
+    return spotTiposPesca.map(stp => stp.tipoPesca);
   }
 
   async findCarnadasByEspecies(id: string){

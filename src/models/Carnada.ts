@@ -18,8 +18,7 @@ import { TipoCarnada } from './TipoCarnada';
 export class Carnada extends Model<Carnada> {
     @PrimaryKey
     @Column({
-        type: DataType.UUID,
-        defaultValue: DataType.UUIDV4,
+        type: DataType.STRING,
         field: 'id',
     })
     declare idCarnada: string;
