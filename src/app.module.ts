@@ -16,6 +16,7 @@ import { AppService } from './app.service';
 import { UsuarioModule } from './usuarios/usuario.module';
 import { CapturaModule } from './captura/captura.module';
 import { TipoPescaModule } from './tipopesca/tipopesca.module';
+import { ReportesModule } from './reportes/reportes.module';
 
 @Module({
   imports: [
@@ -47,6 +48,7 @@ import { TipoPescaModule } from './tipopesca/tipopesca.module';
     UsuarioModule,
     CapturaModule,
     TipoPescaModule,
+    ReportesModule,
   ],
   controllers: [AppController, SecurityController],
   providers: [
