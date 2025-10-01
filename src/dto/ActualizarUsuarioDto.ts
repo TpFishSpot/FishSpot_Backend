@@ -11,5 +11,5 @@ export class ActualizarUsuarioDto {
 
   @IsOptional()
   @IsString()
-  foto?: string;
+  foto?: string | null;
 }

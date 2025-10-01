@@ -20,7 +20,9 @@ export class UsuarioService {
   }
 
   async actualizarUsuario(id: string, body: ActualizarUsuarioDto, foto?: Express.Multer.File) {
-    if (foto) {
+    if (!foto) {
+      body.foto = null; 
+    } else {
       body.foto = `${process.env.direccionDeFoto}/${foto.filename}`;
     }
     return await this.usuarioRepository.actualizarUsuario(id, body);

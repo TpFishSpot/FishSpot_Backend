@@ -19,10 +19,12 @@ DROP TABLE IF EXISTS "Usuario" CASCADE;
 DROP TABLE IF EXISTS "Rol" CASCADE;
 DROP TABLE IF EXISTS "UsuarioRol" CASCADE;
 DROP TABLE IF EXISTS "TipoPesca" CASCADE;
+DROP TABLE IF EXISTS "Reporte" CASCADE;
 
 DROP TYPE IF EXISTS "NivelPescador" CASCADE;
 DROP TYPE IF EXISTS "EstadoSpot" CASCADE;
 DROP TYPE IF EXISTS "TipoCarnada" CASCADE;
+DROP TYPE IF EXISTS "Reporte" CASCADE;
 
 -- ============================================================
 -- CREACIÓN DE TIPOS ENUM
@@ -188,6 +190,18 @@ CREATE TABLE "Captura" (
   FOREIGN KEY ("especieId") REFERENCES "Especie"("id") ON DELETE RESTRICT
 );
 
+
+CREATE TABLE "Reporte" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idSpot" VARCHAR(255) NOT NULL,
+  "idUsuario" VARCHAR(255) NOT NULL,
+  "descripcion" VARCHAR(255),
+  "fechaCreacion" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id") ON DELETE CASCADE,
+  CONSTRAINT unique_usuario_spot UNIQUE("idSpot", "idUsuario")
+);
+
 -- ============================================================
 -- ÍNDICES PARA OPTIMIZACIÓN
 -- ============================================================
@@ -198,6 +212,9 @@ CREATE INDEX idx_captura_fecha ON "Captura"("fecha");
 CREATE INDEX idx_captura_fecha_creacion ON "Captura"("fechaCreacion");
 CREATE INDEX idx_spot_ubicacion ON "Spot" USING GIST("ubicacion");
 CREATE INDEX idx_spot_estado ON "Spot"("estado");
+CREATE INDEX idx_reporte_spot ON "Reporte"("idSpot");
+CREATE INDEX idx_reporte_usuario ON "Reporte"("idUsuario");
+CREATE INDEX idx_reporte_fecha ON "Reporte"("fechaCreacion");
 
 -- ============================================================
 -- TRIGGERS Y FUNCIONES
