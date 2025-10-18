@@ -7,6 +7,7 @@ import { CapturaService } from './captura.service';
 import { Usuario } from 'src/models/Usuario';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
+import { Spot } from 'src/models/Spot';
 import { AuthModule } from 'src/auth/auth.module';
 
 @Module({
@@ -16,6 +17,7 @@ import { AuthModule } from 'src/auth/auth.module';
       Usuario,
       Especie,
       NombreEspecie,
+      Spot,
     ]),
     AuthModule,
   ],

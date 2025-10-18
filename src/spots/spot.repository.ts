@@ -176,20 +176,18 @@ export class SpotRepository {
   }
 
 async findAllByEspecies(especies: string[]): Promise<Spot[]> {
-  // Primero, buscar especies que coincidan con los nombres (científicos o comunes)
   const especiesIds = await Especie.findAll({
     include: [
       {
         model: NombreEspecie,
+        as: 'nombresComunes',
         required: false
       }
     ],
     where: {
       [Op.or]: [
-        // Buscar por nombre científico
         { nombreCientifico: { [Op.in]: especies } },
-        // Buscar por cualquier nombre común
-        { '$NombreEspecies.nombre$': { [Op.in]: especies } }
+        { '$nombresComunes.nombre$': { [Op.in]: especies } }
       ]
     }
   });
@@ -200,7 +198,6 @@ async findAllByEspecies(especies: string[]): Promise<Spot[]> {
     return [];
   }
 
-  // Luego buscar spots que tengan esas especies
   return this.spotModel.findAll({
     where: { isDeleted: false },
     include: [

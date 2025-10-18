@@ -78,6 +78,12 @@ export class CapturaController {
     };
   }
 
+  @Get('spot/:spotId/destacadas')
+  @Public()
+  async getCapturasDestacadas(@Param('spotId') spotId: string): Promise<Captura[]> {
+    return this.capturaService.findCapturasDestacadasBySpot(spotId);
+  }
+
   @Get(':id')
   @Public()
   async findOne(@Param('id') id: string): Promise<Captura> {
@@ -94,6 +100,8 @@ export class CapturaController {
   ): Promise<Captura> {
     try {
       if (rawBody.peso) rawBody.peso = parseFloat(rawBody.peso);
+      if (rawBody.tamanio) rawBody.tamanio = parseFloat(rawBody.tamanio);
+      if (rawBody.latitud) rawBody.latitud = parseFloat(rawBody.latitud);
       if (rawBody.longitud) rawBody.longitud = parseFloat(rawBody.longitud);
 
       const capturaDto = plainToInstance(CapturaDto, rawBody);

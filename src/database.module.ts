@@ -31,9 +31,8 @@ import { SpotTipoPesca } from './models/SpotTipoPesca';
           database: configService.get('DATABASE_NAME'),
           models: [Usuario, Spot, Especie, Carnada, SpotEspecie, Rol, UsuarioRol, NombreEspecie, SpotCarnadaEspecie, Captura, TipoPesca, SpotTipoPesca],
           autoLoadModels: true,
-          synchronize: !isProduction, // Solo en desarrollo
+          synchronize: !isProduction,
           
-          // Configuraciones de seguridad
           pool: {
             max: 10,
             min: 0,
@@ -41,30 +40,25 @@ import { SpotTipoPesca } from './models/SpotTipoPesca';
             idle: 10000,
           },
           
-          // Logging seguro - solo errores en producción
           logging: isProduction 
             ? (sql, timing) => {
-                // Solo log de errores en producción
                 if (sql.toLowerCase().includes('error')) {
                   console.error('[DB ERROR]', sql);
                 }
               }
-            : console.log, // Log completo en desarrollo
+            : console.log,
           
-          // Opciones de seguridad adicionales
           dialectOptions: {
             ssl: isProduction ? {
               require: true,
               rejectUnauthorized: false
             } : false,
-            statement_timeout: 60000, // 60 segundos timeout
+            statement_timeout: 60000,
             query_timeout: 60000,
           },
           
-          // Benchmark para detectar consultas lentas sospechosas
           benchmark: true,
           
-          // Validar tipos de datos estrictamente
           typeValidation: true,
         };
       },

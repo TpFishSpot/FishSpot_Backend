@@ -8,7 +8,7 @@ export class SecurityController {
   constructor(private readonly securityLogger: SecurityLogger) {}
 
   @Get('summary')
-  @Roles(UserRole.MODERATOR) // Solo moderadores pueden ver estadísticas de seguridad
+  @Roles(UserRole.MODERATOR)
   getSecuritySummary() {
     return {
       last24Hours: this.securityLogger.getSecuritySummary(24),

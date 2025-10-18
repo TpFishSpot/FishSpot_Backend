@@ -6,11 +6,15 @@ import { resolve } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import compression from 'compression';
+import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   dotenv.config();
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
+
+  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   app.use(helmet({
     contentSecurityPolicy: {
@@ -52,12 +56,12 @@ async function bootstrap() {
     whitelist: true,
     forbidNonWhitelisted: true,
     transform: true,
-    disableErrorMessages: process.env.NODE_ENV === 'production', // esto es para Ocultar detalles de errores en produ
+    disableErrorMessages: process.env.NODE_ENV === 'production',
   }));
 
   const port = process.env.PORT || 3000;
-  await app.listen(port);
-  console.log(`FishSpot API running on port ${port}`);
+  await app.listen(port, '0.0.0.0');
+  console.log(`FishSpot API running on port ${port} and accessible from network`);
   
   if (process.env.NODE_ENV !== 'production') {
     console.log(' Security middleware active');

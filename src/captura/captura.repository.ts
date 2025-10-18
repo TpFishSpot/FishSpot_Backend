@@ -110,4 +110,31 @@ export class CapturaRepository {
       throw new NotFoundException(`Captura with ID ${id} not found`);
     }
   }
+
+  async findCapturasDestacadasBySpot(spotId: string): Promise<Captura[]> {
+    return this.capturaModel.findAll({
+      where: { spotId },
+      include: [
+        {
+          model: Usuario,
+          attributes: ['id', 'nombre', 'email', 'foto']
+        },
+        {
+          model: Especie,
+          attributes: ['id', 'nombreCientifico', 'descripcion', 'imagen'],
+          include: [
+            {
+              model: NombreEspecie,
+              attributes: ['nombre']
+            }
+          ]
+        }
+      ],
+      order: [
+        ['peso', 'DESC NULLS LAST'],
+        ['fechaCreacion', 'DESC']
+      ],
+      limit: 3
+    });
+  }
 }
