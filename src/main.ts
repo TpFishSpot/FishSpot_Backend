@@ -2,44 +2,79 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
 import { ValidationPipe } from '@nestjs/common';
-import { resolve } from 'path';
+import { resolve, join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import compression from 'compression';
 import * as bodyParser from 'body-parser';
+import { readFileSync, existsSync } from 'fs';
 
 async function bootstrap() {
   dotenv.config();
 
-  const app = await NestFactory.create<NestExpressApplication>(AppModule);
+  
+  const certPath = join(process.cwd(), 'src', 'cert');
+  const keyFile = join(certPath, 'key.pem');
+  const certFile = join(certPath, 'cert.pem');
+
+  let httpsOptions: any = undefined;
+  if (existsSync(keyFile) && existsSync(certFile)) {
+    httpsOptions = {
+      key: readFileSync(keyFile),
+      cert: readFileSync(certFile),
+    };
+    console.log('🔒 HTTPS habilitado (certificados locales encontrados)');
+  } else {
+    console.warn('⚠️ Certificados no encontrados, ejecutando en HTTP');
+  }
+
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, {
+    httpsOptions, 
+  });
 
   app.use(bodyParser.json({ limit: '50mb' }));
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-        defaultSrc: ["'self'"],
-        styleSrc: ["'self'", "'unsafe-inline'"],
-        scriptSrc: ["'self'"],
-        imgSrc: ["'self'", "data:", "blob:", "http:", "https:"],
-        connectSrc: ["'self'", "http:", "https:"],
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          scriptSrc: ["'self'"],
+          imgSrc: ["'self'", 'data:', 'blob:', 'http:', 'https:'],
+          connectSrc: ["'self'", 'http:', 'https:'],
+        },
       },
-    },
-    crossOriginEmbedderPolicy: false,
-    crossOriginResourcePolicy: { policy: "cross-origin" },
-  }));
+      crossOriginEmbedderPolicy: false,
+      crossOriginResourcePolicy: { policy: 'cross-origin' },
+    }),
+  );
+
   app.use(compression());
 
   app.enableCors({
-    origin: process.env.NODE_ENV === 'production'
-      ? process.env.FRONTEND_URL
-      : [
-          'http://localhost:5173',
-          'http://localhost:3000',
-          `${process.env.ipPrivada}`,
-        ],
-    credentials: true,
+  origin: (origin, callback) => {
+    // URLs permitidas:
+    const whitelist = [
+      'http://localhost:5173',
+      'https://localhost:5173',
+      `http://${process.env.IP_PRIVADA}:5173`,
+      `https://${process.env.IP_PRIVADA}:5173`,
+    ];
+
+    // Permitir si no hay origin (por ejemplo Postman) o si está en la whitelist
+    if (!origin || whitelist.includes(origin)) {
+      callback(null, true);
+    } else if (origin && origin.match(/^https?:\/\/192\.168\.1\.\d+:5173$/)) {
+      callback(null, true);
+    } else {
+      callback(new Error('CORS no permitido para ' + origin));
+    }
+  },
+  credentials: true,
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   });
 
   app.useStaticAssets(resolve(process.cwd(), 'uploads'), {
@@ -52,22 +87,23 @@ async function bootstrap() {
     },
   });
 
-  app.useGlobalPipes(new ValidationPipe({
-    whitelist: true,
-    forbidNonWhitelisted: true,
-    transform: true,
-    disableErrorMessages: process.env.NODE_ENV === 'production',
-  }));
+  app.useGlobalPipes(
+    new ValidationPipe({
+      whitelist: true,
+      forbidNonWhitelisted: true,
+      transform: true,
+      disableErrorMessages: process.env.NODE_ENV === 'production',
+    }),
+  );
 
   const port = process.env.PORT || 3000;
   await app.listen(port, '0.0.0.0');
-  console.log(`FishSpot API running on port ${port} and accessible from network`);
-  
-  if (process.env.NODE_ENV !== 'production') {
-    console.log(' Security middleware active');
-    console.log(' Rate limiting enabled');
-  }
+
+  console.log(
+    httpsOptions
+      ? `🚀 FishSpot API corriendo en https://localhost:${port}`
+      : `🚀 FishSpot API corriendo en http://localhost:${port}`,
+  );
 }
 
 bootstrap();
-
