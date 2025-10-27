@@ -56,7 +56,6 @@ async function bootstrap() {
 
   app.enableCors({
   origin: (origin, callback) => {
-    // URLs permitidas:
     const whitelist = [
       'http://localhost:5173',
       'https://localhost:5173',
@@ -64,7 +63,6 @@ async function bootstrap() {
       `https://${process.env.IP_PRIVADA}:5173`,
     ];
 
-    // Permitir si no hay origin (por ejemplo Postman) o si está en la whitelist
     if (!origin || whitelist.includes(origin)) {
       callback(null, true);
     } else if (origin && origin.match(/^https?:\/\/192\.168\.1\.\d+:5173$/)) {

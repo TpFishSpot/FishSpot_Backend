@@ -12,7 +12,6 @@ import { NombreEspecie } from './models/NombreEspecie';
 import { SpotCarnadaEspecie } from './models/SpotCarnadaEspecie';
 import { Captura } from './models/Captura';
 import { TipoPesca } from './models/TipoPesca';
-import { SpotTipoPesca } from './models/SpotTipoPesca';
 
 @Module({
   imports: [
@@ -29,7 +28,7 @@ import { SpotTipoPesca } from './models/SpotTipoPesca';
           username: configService.get('DATABASE_USER'),
           password: configService.get('DATABASE_PASSWORD'),
           database: configService.get('DATABASE_NAME'),
-          models: [Usuario, Spot, Especie, Carnada, SpotEspecie, Rol, UsuarioRol, NombreEspecie, SpotCarnadaEspecie, Captura, TipoPesca, SpotTipoPesca],
+          models: [Usuario, Spot, Especie, Carnada, SpotEspecie, Rol, UsuarioRol, NombreEspecie, SpotCarnadaEspecie, Captura, TipoPesca],
           autoLoadModels: true,
           synchronize: !isProduction,
           

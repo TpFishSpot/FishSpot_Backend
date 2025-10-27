@@ -1,5 +1,4 @@
-import { Table, Column, DataType, Model, HasMany } from 'sequelize-typescript';
-import { SpotTipoPesca } from './SpotTipoPesca';
+import { Table, Column, DataType, Model } from 'sequelize-typescript';
 
 @Table({
   tableName: 'TipoPesca',
@@ -24,7 +23,4 @@ export class TipoPesca extends Model<TipoPesca> {
     allowNull: true,
   })
   declare descripcion: string;
-
-  @HasMany(() => SpotTipoPesca, 'idTipoPesca')
-  spotTipoPesca: SpotTipoPesca[];
 }

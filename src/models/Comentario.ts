@@ -58,7 +58,6 @@ export class Comentario extends Model {
   })
   declare fecha: Date;
 
-  // Relaciones
   @BelongsTo(() => Usuario)
   declare usuario: Usuario;
 

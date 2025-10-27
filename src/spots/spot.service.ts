@@ -19,19 +19,7 @@ export class SpotService {
     private readonly carnadaRepository: CarnadaRepository,
   ) {}
 
- async findAll(tiposPesca: string[] = [], especies: string[] = []): Promise<Spot[]> {
-  if (tiposPesca.length > 0 && especies.length > 0) {
-    const spotsPorTipo = await this.spotRepository.findAllByTiposPesca(tiposPesca);
-    const spotsPorEspecie = await this.spotRepository.findAllByEspecies(especies);
-    
-    const idsSpotsPorTipo = new Set(spotsPorTipo.map(spot => spot.id));
-    return spotsPorEspecie.filter(spot => idsSpotsPorTipo.has(spot.id));
-  }
-  
-  if (tiposPesca.length > 0) {
-    return this.spotRepository.findAllByTiposPesca(tiposPesca);
-  }
-  
+ async findAll(especies: string[] = []): Promise<Spot[]> {
   if (especies.length > 0) {
     return this.spotRepository.findAllByEspecies(especies);
   }
@@ -43,7 +31,6 @@ export class SpotService {
     spotDto: SpotDto,
     imagenPath?: string,
     especies: string[] = [],
-    tiposPesca: string[] = [],
     carnadas: { idEspecie: string; idCarnada: string }[] = [],
   ): Promise<Spot> {
     const hoy = new Date();
@@ -92,11 +79,6 @@ export class SpotService {
 
   async findAllEspecies(id: string): Promise<EspecieConNombreComun[]> {
     return this.spotRepository.obtenerEspeciesPorSpot(id);
-  }
-
-  async findAllTipoPesca(id: string): Promise<TipoPesca[]> {
-    const spotTiposPesca = await this.spotRepository.obtenerTipoPesca(id);
-    return spotTiposPesca.map(stp => stp.tipoPesca);
   }
 
   async findCarnadasByEspecies(id: string){

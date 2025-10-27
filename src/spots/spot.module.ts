@@ -7,7 +7,6 @@ import { SpotService } from './spot.service';
 import { SpotEspecie } from 'src/models/SpotEspecie';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
-import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 import { TipoPesca } from 'src/models/TipoPesca';
 import { Carnada } from 'src/models/Carnada';
 import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
@@ -22,7 +21,6 @@ import { AuthModule } from 'src/auth/auth.module';
       SpotEspecie,
       Especie,
       NombreEspecie,
-      SpotTipoPesca,
       TipoPesca,
       Carnada,
       SpotCarnadaEspecie,
