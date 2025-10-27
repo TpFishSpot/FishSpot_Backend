@@ -1,4 +1,12 @@
-import { Table, Column, DataType, ForeignKey, BelongsTo, Model } from 'sequelize-typescript';
+import { 
+  Table, 
+  Column, 
+  DataType, 
+  ForeignKey, 
+  BelongsTo, 
+  HasMany, 
+  Model 
+} from 'sequelize-typescript';
 import { Usuario } from './Usuario';
 import { Spot } from './Spot';
 
@@ -29,8 +37,16 @@ export class Comentario extends Model {
   })
   declare idSpot: string;
 
+  @ForeignKey(() => Comentario)
   @Column({
-    type: DataType.TEXT,
+    type: DataType.STRING,
+    allowNull: true,
+    field: 'idComentarioPadre',
+  })
+  declare idComentarioPadre?: string;
+
+  @Column({
+    type: DataType.STRING,
     allowNull: false,
   })
   declare contenido: string;
@@ -48,4 +64,10 @@ export class Comentario extends Model {
 
   @BelongsTo(() => Spot)
   declare spot: Spot;
+
+  @BelongsTo(() => Comentario, { foreignKey: 'idComentarioPadre' })
+  declare comentarioPadre?: Comentario;
+
+  @HasMany(() => Comentario, 'idComentarioPadre')
+  declare respuestas?: Comentario[];
 }

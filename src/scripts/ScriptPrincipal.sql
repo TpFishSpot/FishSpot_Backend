@@ -143,10 +143,12 @@ CREATE TABLE "Comentario" (
   "id" VARCHAR(255) PRIMARY KEY,
   "idUsuario" VARCHAR(255),
   "idSpot" VARCHAR(255),
-  "contenido" TEXT,
+  "idComentarioPadre" VARCHAR(255),
+  "contenido" VARCHAR(255),
   "fecha" DATE,
   FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id"),
-  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id")
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id"),
+  FOREIGN KEY ("idComentarioPadre") REFERENCES "Comentario"("id") ON DELETE CASCADE
 );
 
 CREATE TABLE "SolicitudDeDato" (

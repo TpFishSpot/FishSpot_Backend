@@ -40,22 +40,23 @@ import { SpotTipoPesca } from './models/SpotTipoPesca';
             idle: 10000,
           },
           
-          logging: isProduction 
-            ? (sql, timing) => {
-                if (sql.toLowerCase().includes('error')) {
-                  console.error('[DB ERROR]', sql);
-                }
-              }
-            : console.log,
+          logging: false,            //desactiva los logs de las querys
+          // logging: isProduction 
+          //   ? (sql, timing) => {
+          //       if (sql.toLowerCase().includes('error')) {
+          //         console.error('[DB ERROR]', sql);
+          //       }
+          //     }
+          //   : console.log,
           
-          dialectOptions: {
-            ssl: isProduction ? {
-              require: true,
-              rejectUnauthorized: false
-            } : false,
-            statement_timeout: 60000,
-            query_timeout: 60000,
-          },
+          // dialectOptions: {
+          //   ssl: isProduction ? {
+          //     require: true,
+          //     rejectUnauthorized: false
+          //   } : false,
+          //   statement_timeout: 60000,
+          //   query_timeout: 60000,
+          // },
           
           benchmark: true,
           

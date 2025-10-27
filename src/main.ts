@@ -29,7 +29,8 @@ async function bootstrap() {
   }
 
   const app = await NestFactory.create<NestExpressApplication>(AppModule, {
-    httpsOptions, 
+    httpsOptions,
+    logger:false,       // logs de nest desactivados
   });
 
   app.use(bodyParser.json({ limit: '50mb' }));
