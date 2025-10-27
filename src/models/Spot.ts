@@ -9,7 +9,6 @@ import {
 import { Optional } from 'sequelize';
 import { EstadoSpot } from './EstadoSpot';
 import { Usuario } from './Usuario';
-import { SpotTipoPesca } from './SpotTipoPesca';
 import { SpotEspecie } from './SpotEspecie';
 
 export interface SpotProps {
@@ -67,9 +66,6 @@ export class Spot extends Model<SpotProps, SpotCreationProps> {
 
   @Column({ type: DataType.BOOLEAN, defaultValue: false })
   declare isDeleted: boolean;
-
-  @HasMany(() => SpotTipoPesca, 'idSpot')
-  tiposPesca: SpotTipoPesca[];
 
   @HasMany(() => SpotEspecie, 'idSpot')
   especies: SpotEspecie[];

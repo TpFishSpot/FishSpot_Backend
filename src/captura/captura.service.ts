@@ -5,6 +5,10 @@ import { Captura } from 'src/models/Captura';
 import { v4 as uuidv4 } from 'uuid';
 import { InjectModel } from '@nestjs/sequelize'; 
 import { Spot } from 'src/models/Spot';
+import { SpotEspecie } from 'src/models/SpotEspecie';
+import { Especie } from 'src/models/Especie';
+import { NombreEspecie } from 'src/models/NombreEspecie';
+import { NotFoundException } from '@nestjs/common';
 
 interface GeoJSONPoint {
   type: 'Point';
@@ -17,6 +21,10 @@ export class CapturaService {
     private readonly capturaRepository: CapturaRepository,
     @InjectModel(Spot)
     private readonly spotModel: typeof Spot,
+    @InjectModel(SpotEspecie)
+    private readonly spotEspecieModel: typeof SpotEspecie,
+    @InjectModel(Especie)
+    private readonly especieModel: typeof Especie,
   ) {}
 
 
@@ -68,6 +76,24 @@ export class CapturaService {
 
     return spotMasCercano;
   }
+
+  private async registrarEspecieEnSpot(spotId: string, especieId: string): Promise<void> {
+    const existeRelacion = await this.spotEspecieModel.findOne({
+      where: {
+        idSpot: spotId,
+        idEspecie: especieId,
+      },
+    });
+
+    if (!existeRelacion) {
+      const nuevoRegistro = new this.spotEspecieModel();
+      nuevoRegistro.idSpotEspecie = uuidv4();
+      nuevoRegistro.idSpot = spotId;
+      nuevoRegistro.idEspecie = especieId;
+      await nuevoRegistro.save();
+    }
+  }
+
   async findAll(): Promise<Captura[]> {
     const capturas = await this.capturaRepository.findAll();
     
@@ -156,7 +182,13 @@ async create(
       fechaActualizacion: new Date(),
     };
 
-    return this.capturaRepository.create(nuevaCaptura);
+    const captura = await this.capturaRepository.create(nuevaCaptura);
+
+    if (spotIdFinal) {
+      await this.registrarEspecieEnSpot(spotIdFinal, capturaDto.especieId);
+    }
+
+    return captura;
   }
   
   async update(
@@ -182,7 +214,13 @@ async create(
       ...(imagenPath && { foto: imagenPath }),
     };
 
-    return this.capturaRepository.update(id, datosActualizados);
+    const captura = await this.capturaRepository.update(id, datosActualizados);
+
+    if (capturaDto.spotId) {
+      await this.registrarEspecieEnSpot(capturaDto.spotId, capturaDto.especieId);
+    }
+
+    return captura;
   }
 
   async delete(id: string): Promise<void> {
@@ -200,5 +238,32 @@ async create(
         tamanio: capturaJson.tamanio ? parseFloat(capturaJson.tamanio.toString()) : null,
       } as Captura;
     });
+  }
+
+  async obtenerDetalleEspecies(especiesIds: string[]): Promise<Map<string, any>> {
+    const especies = await this.especieModel.findAll({
+      where: { idEspecie: especiesIds },
+      include: [
+        {
+          model: NombreEspecie,
+          as: 'nombresComunes',
+          attributes: ['id', 'nombre'],
+          required: false,
+        },
+      ],
+      attributes: ['idEspecie', 'nombreCientifico', 'imagen'],
+    });
+
+    const especiesMap = new Map();
+    especies.forEach(especie => {
+      const especieJson = especie.toJSON() as any;
+      especiesMap.set(especieJson.idEspecie, {
+        nombreCientifico: especieJson.nombreCientifico || especieJson.idEspecie,
+        nombresComunes: especieJson.nombresComunes?.map((n: any) => n.nombre) || [],
+        imagen: especieJson.imagen,
+      });
+    });
+
+    return especiesMap;
   }
 }
