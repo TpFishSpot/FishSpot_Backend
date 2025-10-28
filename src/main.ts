@@ -100,8 +100,8 @@ async function bootstrap() {
 
   console.log(
     httpsOptions
-      ? `🚀 FishSpot API corriendo en https://localhost:${port}`
-      : `🚀 FishSpot API corriendo en http://localhost:${port}`,
+      ? `🚀 FishSpot API corriendo en https://${process.env.IP_PRIVADA}:${port}`
+      : `🚀 FishSpot API corriendo en http://${process.env.IP_PRIVADA}:${port}`,
   );
 }
 
