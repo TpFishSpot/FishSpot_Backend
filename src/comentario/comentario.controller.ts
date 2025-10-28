@@ -13,15 +13,15 @@ import { CrearComentarioDto } from 'src/dto/comentarios/CrearComentarioDto';
 export class ComentarioController {
   constructor(private readonly comentarioService: ComentarioService) {}
 
-  @Get(':spotId')
+  @Get(':entityId')
   @Public()
-  async listarPorSpot(
-    @Param('spotId') spotId: string,
+  async listarComentarios(
+    @Param('entityId') entityId: string,
     @Query('lastFecha') lastFecha?: string,
     @Query('lastId') lastId?: string,
   ): Promise<ComentarioDto[]> {
     const fecha = lastFecha ? new Date(lastFecha) : undefined;
-    return this.comentarioService.listarPorSpot(spotId, fecha, lastId);
+    return this.comentarioService.listarComentarios(entityId, fecha, lastId);
   }
 
   @Roles(UserRole.USER)
@@ -31,10 +31,10 @@ export class ComentarioController {
     @Body() body: CrearComentarioDto,
   ): Promise<ComentarioDto> {
     const idUsuario = req.user.uid;
-
-    return this.comentarioService.agregarComentario(idUsuario, body.idSpot, body.contenido);
+    return this.comentarioService.agregarComentario(idUsuario, body.idSpot, body.idCaptura, body.contenido);
   }
   
+  @Roles(UserRole.USER)
   @Roles(UserRole.USER)
   @Post('responder')
   async responderComentario(
@@ -45,9 +45,9 @@ export class ComentarioController {
     return this.comentarioService.responderComentario(
       idUsuario,
       body.idSpot,
+      body.idCaptura,
       body.idComentarioPadre,
       body.contenido,
     );
   }
-
 }

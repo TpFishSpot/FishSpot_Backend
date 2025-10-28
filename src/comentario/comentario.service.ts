@@ -8,11 +8,11 @@ import { Comentario } from 'src/models/Comentario';
 export class ComentarioService {
   constructor(private readonly comentarioRepository: ComentarioRepository) {}
 
-  async listarPorSpot(idSpot: string, lastFecha?: Date, lastId?: string): Promise<ComentarioDto[]> {
+  async listarComentarios(entityId: string, lastFecha?: Date, lastId?: string): Promise<ComentarioDto[]> {
     const limit = 5;
 
-    const comentariosPadre = await this.comentarioRepository.findPadresBySpotId(
-      idSpot,
+    const comentariosPadre = await this.comentarioRepository.findPadresByEntity(
+      entityId,
       limit,
       lastFecha,
       lastId
@@ -30,15 +30,20 @@ export class ComentarioService {
     return respuesta;
   }
 
-  async agregarComentario(idUsuario: string, idSpot: string, contenido: string): Promise<ComentarioDto> {
+  async agregarComentario(idUsuario: string, idSpot?: string, idCaptura?: string, contenido?: string): Promise<ComentarioDto> {
     if (!contenido?.trim()) {
       throw new BadRequestException('El comentario no puede estar vacío');
+    }
+
+    if (!idSpot && !idCaptura) {
+      throw new BadRequestException('Debe proporcionar idSpot o idCaptura');
     }
 
     const nuevoComentario = {
       id: uuidv4(),
       idUsuario,
-      idSpot,
+      ...(idSpot && { idSpot }),
+      ...(idCaptura && { idCaptura }),
       contenido,
       fecha: new Date(),
     };
@@ -50,6 +55,7 @@ export class ComentarioService {
       fecha: comentario.fecha,
       idUsuario: comentario.idUsuario,
       idSpot: comentario.idSpot,
+      idCaptura: comentario.idCaptura,
       usuario: comentario.usuario,
     };
   }
@@ -60,20 +66,26 @@ export class ComentarioService {
 
   async responderComentario(
     idUsuario: string,
-    idSpot: string,
-    idComentarioPadre: string,
-    contenido: string,
+    idSpot?: string,
+    idCaptura?: string,
+    idComentarioPadre?: string,
+    contenido?: string,
   ): Promise<ComentarioDto> {
     if (!contenido?.trim()) {
       throw new BadRequestException('La respuesta no puede estar vacía');
     }
 
-    const comentarioPadre = await this.buscarComentario(idComentarioPadre);
+    if (!idSpot && !idCaptura) {
+      throw new BadRequestException('Debe proporcionar idSpot o idCaptura');
+    }
+
+    const comentarioPadre = await this.buscarComentario(idComentarioPadre!);
 
     const nuevaRespuesta = {
       id: uuidv4(),
       idUsuario,
-      idSpot,
+      ...(idSpot && { idSpot }),
+      ...(idCaptura && { idCaptura }),
       idComentarioPadre,
       contenido,
       fecha: new Date(),
@@ -86,6 +98,7 @@ export class ComentarioService {
       fecha: respuesta.fecha,
       idUsuario: respuesta.idUsuario,
       idSpot: respuesta.idSpot,
+      idCaptura: respuesta.idCaptura,
       usuario: respuesta.usuario,
       idComentarioPadre: respuesta.idComentarioPadre,
     };

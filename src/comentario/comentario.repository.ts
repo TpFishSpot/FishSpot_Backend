@@ -19,19 +19,26 @@ export class ComentarioRepository {
     });
   }
 
-  async findPadresBySpotId(
-    spotId: string,
+  async findPadresByEntity(
+    entityId: string,
     limit: number,
     lastFecha?: Date,
     lastId?: string
   ): Promise<Comentario[]> {
-    const where: any = { idSpot: spotId, idComentarioPadre: null };
+    const where: any = {
+      [Op.or]: [{ idSpot: entityId }, { idCaptura: entityId }],
+      idComentarioPadre: null
+    };
 
     if (lastFecha) {
-      where[Op.or] = [
-        { fecha: { [Op.lt]: lastFecha } },
-        lastId ? { fecha: lastFecha, id: { [Op.lt]: lastId } } : undefined,
-      ].filter(Boolean);
+      where[Op.and] = [
+        {
+          [Op.or]: [
+            { fecha: { [Op.lt]: lastFecha } },
+            lastId ? { fecha: lastFecha, id: { [Op.lt]: lastId } } : undefined,
+          ].filter(Boolean)
+        }
+      ];
     }
 
     return this.comentarioModel.findAll({

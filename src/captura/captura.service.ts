@@ -266,4 +266,166 @@ async create(
 
     return especiesMap;
   }
+
+  async obtenerEstadisticasGlobales(): Promise<any> {
+    const ahora = new Date();
+    const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
+    const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59);
+
+    const capturasMes = await this.capturaRepository.findAll();
+    const capturasFiltradas = capturasMes.filter(c => {
+      const fecha = new Date(c.fecha);
+      return fecha >= inicioMes && fecha <= finMes && c.foto;
+    });
+
+    const totalCapturas = capturasFiltradas.length;
+    const usuariosUnicos = new Set(capturasFiltradas.map(c => c.idUsuario));
+    const totalUsuarios = usuariosUnicos.size;
+
+    const capturasPorEspecie = capturasFiltradas.reduce((acc, captura) => {
+      if (!acc[captura.especieId]) {
+        acc[captura.especieId] = [];
+      }
+      acc[captura.especieId].push(captura);
+      return acc;
+    }, {} as Record<string, Captura[]>);
+
+    const especiesRankeadas = Object.entries(capturasPorEspecie)
+      .map(([especieId, capturas]) => ({
+        especieId,
+        totalCapturas: capturas.length,
+        capturas: capturas.sort((a, b) => {
+          const pesoA = a.peso ? parseFloat(a.peso.toString()) : 0;
+          const pesoB = b.peso ? parseFloat(b.peso.toString()) : 0;
+          return pesoB - pesoA;
+        }).slice(0, 3),
+      }))
+      .sort((a, b) => b.totalCapturas - a.totalCapturas)
+      .slice(0, 3);
+
+    const especiesIds = especiesRankeadas.map(e => e.especieId);
+    const especiesDetalles = await this.obtenerDetalleEspecies(especiesIds);
+
+    const especiesDestacadas = especiesRankeadas.map(especie => {
+      const detalle = especiesDetalles.get(especie.especieId);
+      return {
+        especieId: especie.especieId,
+        nombreCientifico: detalle?.nombreCientifico || especie.especieId,
+        nombresComunes: detalle?.nombresComunes || [],
+        totalCapturasMes: especie.totalCapturas,
+        capturasDestacadas: especie.capturas.map(c => ({
+          id: c.id,
+          peso: c.peso ? parseFloat(c.peso.toString()) : null,
+          tamanio: c.tamanio ? parseFloat(c.tamanio.toString()) : null,
+          foto: c.foto,
+          fecha: c.fecha,
+          usuario: {
+            id: (c as any).usuario?.id,
+            nombre: (c as any).usuario?.nombre,
+            foto: (c as any).usuario?.foto,
+          },
+          spot: (c as any).spot ? {
+            id: (c as any).spot.id,
+            nombre: (c as any).spot.nombre,
+          } : null,
+        })),
+      };
+    });
+
+    const capturasPorUsuario = capturasFiltradas.reduce((acc, captura) => {
+      if (!acc[captura.idUsuario]) {
+        acc[captura.idUsuario] = [];
+      }
+      acc[captura.idUsuario].push(captura);
+      return acc;
+    }, {} as Record<string, Captura[]>);
+
+    const usuariosDestacados = Object.entries(capturasPorUsuario)
+      .map(([idUsuario, capturas]) => {
+        const mejorCaptura = capturas.sort((a, b) => {
+          const pesoA = a.peso ? parseFloat(a.peso.toString()) : 0;
+          const pesoB = b.peso ? parseFloat(b.peso.toString()) : 0;
+          return pesoB - pesoA;
+        })[0];
+
+        return {
+          id: idUsuario,
+          nombre: (mejorCaptura as any).usuario?.nombre,
+          foto: (mejorCaptura as any).usuario?.foto,
+          totalCapturasMes: capturas.length,
+          mejorCaptura: {
+            id: mejorCaptura.id,
+            peso: mejorCaptura.peso ? parseFloat(mejorCaptura.peso.toString()) : null,
+            tamanio: mejorCaptura.tamanio ? parseFloat(mejorCaptura.tamanio.toString()) : null,
+            foto: mejorCaptura.foto,
+            fecha: mejorCaptura.fecha,
+            especie: {
+              id: mejorCaptura.especieId,
+              nombreCientifico: especiesDetalles.get(mejorCaptura.especieId)?.nombreCientifico || mejorCaptura.especieId,
+            },
+          },
+        };
+      })
+      .sort((a, b) => b.totalCapturasMes - a.totalCapturasMes)
+      .slice(0, 3);
+
+    const nombresMeses = [
+      'Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio',
+      'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'
+    ];
+
+    return {
+      mesActual: `${nombresMeses[ahora.getMonth()]} ${ahora.getFullYear()}`,
+      totalCapturas,
+      totalUsuarios,
+      especiesDestacadas,
+      usuariosDestacados,
+    };
+  }
+
+  async obtenerHeatmap(especieId?: string, mes?: number): Promise<any> {
+    const capturas = await this.capturaRepository.findAllWithSpots();
+    
+    let capturasFiltradas = capturas.filter(c => c.spotId);
+
+    if (especieId) {
+      capturasFiltradas = capturasFiltradas.filter(c => c.especieId === especieId);
+    }
+
+    if (mes !== undefined && mes >= 1 && mes <= 12) {
+      capturasFiltradas = capturasFiltradas.filter(c => {
+        const fecha = new Date(c.fecha);
+        return fecha.getMonth() + 1 === mes;
+      });
+    }
+
+    const capturasPorSpot = capturasFiltradas.reduce((acc, captura) => {
+      const spotId = captura.spotId!;
+      if (!acc[spotId]) {
+        acc[spotId] = {
+          capturas: [],
+          spot: (captura as any).spot,
+        };
+      }
+      acc[spotId].capturas.push(captura);
+      return acc;
+    }, {} as Record<string, { capturas: Captura[], spot: any }>);
+
+    const puntos = Object.entries(capturasPorSpot)
+      .filter(([_, data]) => data.spot?.ubicacion)
+      .map(([spotId, data]) => {
+        const ubicacion = data.spot.ubicacion;
+        const [lng, lat] = ubicacion.coordinates;
+        
+        return {
+          lat,
+          lng,
+          intensidad: data.capturas.length,
+          spotId,
+          spotNombre: data.spot.nombre,
+        };
+      });
+
+    return { puntos };
+  }
 }
