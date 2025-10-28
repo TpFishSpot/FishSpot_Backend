@@ -3,7 +3,6 @@ import { InjectModel } from '@nestjs/sequelize';
 import { Usuario } from 'src/models/Usuario';
 import { UsuarioRol } from 'src/models/UsuarioRol';
 import { Rol } from 'src/models/Rol';
-import { error } from 'console';
 import { ActualizarUsuarioDto } from 'src/dto/ActualizarUsuarioDto';
 
 @Injectable()
@@ -18,6 +17,61 @@ export class UsuarioRepository {
     @InjectModel(Rol)
     private readonly rolModel: typeof Rol,
   ) {}
+
+  async findOrCreateUser(uid: string, email: string, name?: string, photoURL?: string): Promise<Usuario> {
+    try {
+      let user = await this.usuarioModel.findByPk(uid, {
+        include: [
+          {
+            model: Rol,
+            through: { attributes: [] },
+            attributes: ['id', 'nombre'],
+          },
+        ],
+      });
+
+      if (!user) {
+        user = await this.usuarioModel.create({
+          id: uid,
+          email,
+          nombre: name || email.split('@')[0],
+          foto: photoURL || null,
+          nivelPescador: 'Principiante',
+        } as any);
+
+        const defaultRole = await this.rolModel.findOne({
+          where: { nombre: 'usuario' },
+        });
+
+        if (defaultRole) {
+          await this.usuarioRolModel.create({
+            usuarioId: uid,
+            rolId: defaultRole.id,
+          } as any);
+        }
+
+        user = await this.usuarioModel.findByPk(uid, {
+          include: [
+            {
+              model: Rol,
+              through: { attributes: [] },
+              attributes: ['id', 'nombre'],
+            },
+          ],
+        });
+      } else if (photoURL && user.foto !== photoURL) {
+        await user.update({ foto: photoURL });
+      }
+
+      if (!user) {
+        throw new Error('Failed to create or find user');
+      }
+
+      return user;
+    } catch (error) {
+      throw error;
+    }
+  }
 
   async findAll(): Promise<Usuario[]> {
     return this.usuarioModel.findAll({

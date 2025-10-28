@@ -20,5 +20,6 @@ import { Rol } from 'src/models/Rol';
     UsuarioRepository,
   ],
   controllers: [UsuarioController],
+  exports: [UsuarioService],
 })
 export class UsuarioModule {}
