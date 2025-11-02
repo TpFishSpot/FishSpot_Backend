@@ -172,5 +172,10 @@ async findAllByEspecies(especies: string[]): Promise<Spot[]> {
     ]
   });
 }
+  async cantSpots(usuarioId: string): Promise<number>{
+     return this.spotModel.count({
+        where: { idUsuario: usuarioId }
+    });
+  }
 
 }

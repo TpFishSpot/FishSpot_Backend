@@ -77,4 +77,10 @@ export class ComentarioRepository {
 
     return comentarioCompleto!;
   }
+
+  async cantComentarios(usuarioId: string): Promise<number> {
+    return this.comentarioModel.count({
+        where: { idUsuario: usuarioId }
+    });
+  }
 }
