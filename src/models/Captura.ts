@@ -9,6 +9,7 @@ import {
 import { Usuario } from './Usuario';
 import { Especie } from './Especie';
 import { Optional } from 'sequelize';
+import { Spot } from './Spot';
 
 export interface CapturaProps {
   id: string;
@@ -16,8 +17,11 @@ export interface CapturaProps {
   especieId: string;
   fecha: Date;
   ubicacion: string;
-  peso?: number;
+  spotId?: string; 
+  latitud?: number; 
   longitud?: number;
+  peso?: number;
+  tamanio?: number;
   carnada: string;
   tipoPesca: string;
   foto?: string;
@@ -49,11 +53,21 @@ export class Captura extends Model<CapturaProps, CapturaCreationProps> {
   @Column({ type: DataType.STRING(500) })
   declare ubicacion: string;
 
+  @ForeignKey(() => Spot)
+  @Column({ type: DataType.STRING, allowNull: true })
+  declare spotId?: string;
+
+  @Column({ type: DataType.DECIMAL(10, 8), allowNull: true })
+  declare latitud?: number; 
+
+  @Column({ type: DataType.DECIMAL(11, 8), allowNull: true })
+  declare longitud?: number;  
+
   @Column({ type: DataType.DECIMAL(8, 2) })
   declare peso?: number;
 
   @Column({ type: DataType.DECIMAL(6, 2) })
-  declare longitud?: number;
+  declare tamanio?: number;
 
   @Column({ type: DataType.STRING })
   declare carnada: string;
@@ -84,4 +98,7 @@ export class Captura extends Model<CapturaProps, CapturaCreationProps> {
 
   @BelongsTo(() => Especie)
   declare especie: Especie;
+
+  @BelongsTo(() => Spot)  
+  declare spot?: Spot;
 }

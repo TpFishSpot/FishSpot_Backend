@@ -12,7 +12,6 @@ import { NombreEspecie } from './models/NombreEspecie';
 import { SpotCarnadaEspecie } from './models/SpotCarnadaEspecie';
 import { Captura } from './models/Captura';
 import { TipoPesca } from './models/TipoPesca';
-import { SpotTipoPesca } from './models/SpotTipoPesca';
 
 @Module({
   imports: [
@@ -29,11 +28,10 @@ import { SpotTipoPesca } from './models/SpotTipoPesca';
           username: configService.get('DATABASE_USER'),
           password: configService.get('DATABASE_PASSWORD'),
           database: configService.get('DATABASE_NAME'),
-          models: [Usuario, Spot, Especie, Carnada, SpotEspecie, Rol, UsuarioRol, NombreEspecie, SpotCarnadaEspecie, Captura, TipoPesca, SpotTipoPesca],
+          models: [Usuario, Spot, Especie, Carnada, SpotEspecie, Rol, UsuarioRol, NombreEspecie, SpotCarnadaEspecie, Captura, TipoPesca],
           autoLoadModels: true,
-          synchronize: !isProduction, // Solo en desarrollo
+          synchronize: !isProduction,
           
-          // Configuraciones de seguridad
           pool: {
             max: 10,
             min: 0,
@@ -41,30 +39,26 @@ import { SpotTipoPesca } from './models/SpotTipoPesca';
             idle: 10000,
           },
           
-          // Logging seguro - solo errores en producción
-          logging: isProduction 
-            ? (sql, timing) => {
-                // Solo log de errores en producción
-                if (sql.toLowerCase().includes('error')) {
-                  console.error('[DB ERROR]', sql);
-                }
-              }
-            : console.log, // Log completo en desarrollo
+          logging: false,            //desactiva los logs de las querys
+          // logging: isProduction 
+          //   ? (sql, timing) => {
+          //       if (sql.toLowerCase().includes('error')) {
+          //         console.error('[DB ERROR]', sql);
+          //       }
+          //     }
+          //   : console.log,
           
-          // Opciones de seguridad adicionales
-          dialectOptions: {
-            ssl: isProduction ? {
-              require: true,
-              rejectUnauthorized: false
-            } : false,
-            statement_timeout: 60000, // 60 segundos timeout
-            query_timeout: 60000,
-          },
+          // dialectOptions: {
+          //   ssl: isProduction ? {
+          //     require: true,
+          //     rejectUnauthorized: false
+          //   } : false,
+          //   statement_timeout: 60000,
+          //   query_timeout: 60000,
+          // },
           
-          // Benchmark para detectar consultas lentas sospechosas
           benchmark: true,
           
-          // Validar tipos de datos estrictamente
           typeValidation: true,
         };
       },

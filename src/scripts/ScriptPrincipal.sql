@@ -143,10 +143,12 @@ CREATE TABLE "Comentario" (
   "id" VARCHAR(255) PRIMARY KEY,
   "idUsuario" VARCHAR(255),
   "idSpot" VARCHAR(255),
-  "contenido" TEXT,
+  "idComentarioPadre" VARCHAR(255),
+  "contenido" VARCHAR(255),
   "fecha" DATE,
   FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id"),
-  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id")
+  FOREIGN KEY ("idSpot") REFERENCES "Spot"("id"),
+  FOREIGN KEY ("idComentarioPadre") REFERENCES "Comentario"("id") ON DELETE CASCADE
 );
 
 CREATE TABLE "SolicitudDeDato" (
@@ -1273,3 +1275,24 @@ ORDER BY tabla;
 
 
 select * from "Usuario";
+
+ALTER TABLE "Captura" 
+ADD COLUMN "spotId" VARCHAR(255),
+ADD COLUMN "latitud" DECIMAL(10,8),
+ADD COLUMN "tamanio" DECIMAL(6,2);
+
+
+ALTER TABLE "Captura"
+ADD CONSTRAINT "fk_captura_spot" 
+FOREIGN KEY ("spotId") REFERENCES "Spot"("id") ON DELETE SET NULL;
+
+
+CREATE INDEX idx_captura_spotId ON "Captura"("spotId");
+CREATE INDEX idx_captura_peso ON "Captura"("peso" DESC NULLS LAST);
+CREATE INDEX idx_captura_tamanio ON "Captura"("tamanio" DESC NULLS LAST);
+
+SELECT column_name, data_type 
+FROM information_schema.columns 
+WHERE table_schema = 'public' 
+  AND table_name = 'Captura' 
+  AND column_name IN ('spotId', 'latitud', 'longitud', 'tamanio');

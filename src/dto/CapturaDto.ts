@@ -15,13 +15,25 @@ export class CapturaDto {
   @IsString()
   ubicacion: string;
 
+  @IsOptional()  
+  @IsString() 
+  spotId?: string; 
+
+  @IsOptional()  
+  @IsNumber() 
+  latitud?: number;  
+
+  @IsOptional() 
+  @IsNumber()  
+  longitud?: number;  
+
   @IsOptional()
   @IsNumber()
   peso?: number;
 
   @IsOptional()
   @IsNumber()
-  longitud?: number;
+  tamanio?: number;
 
   @IsString()
   carnada: string;

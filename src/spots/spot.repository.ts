@@ -2,7 +2,6 @@ import { BadRequestException, ForbiddenException, Injectable, NotFoundException 
 import { InjectModel } from '@nestjs/sequelize';
 import { Spot, SpotCreationProps } from 'src/models/Spot';
 import { SpotEspecie } from 'src/models/SpotEspecie';
-import { SpotTipoPesca } from 'src/models/SpotTipoPesca';
 import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { Especie } from 'src/models/Especie';
@@ -20,9 +19,6 @@ export class SpotRepository {
 
     @InjectModel(SpotEspecie)
     private readonly spotEspecieModel: typeof SpotEspecie,
-
-    @InjectModel(SpotTipoPesca)
-    private readonly spotTipoPescaModel: typeof SpotTipoPesca,
 
     @InjectModel(SpotCarnadaEspecie)
     private readonly spotCarnadaEspecieModel: typeof SpotCarnadaEspecie,
@@ -60,16 +56,9 @@ export class SpotRepository {
     });
   }
 
-  async obtenerTipoPesca(idSpot: string): Promise<SpotTipoPesca[]> {
-    return this.spotTipoPescaModel.findAll({
-      where: { idSpot },
-      include: [TipoPesca],
-    });
-  }
   async createSpotConTransaccion(
     spot: SpotCreationProps,
     especies: string[] = [],
-    tiposPesca: string[] = [],
     carnadas: { idEspecie: string; idCarnada: string }[] = [],
   ): Promise<Spot> {
     if (!this.spotModel.sequelize) throw new Error('Sequelize no inicializado');
@@ -83,17 +72,6 @@ export class SpotRepository {
             id: uuidv4(),
             idSpot: nuevoSpot.id,
             idEspecie,
-          })) as any[],
-          { transaction: t },
-        );
-      }
-
-      if (tiposPesca.length) {
-        await this.spotTipoPescaModel.bulkCreate(
-          tiposPesca.map(idTipoPesca => ({
-            id: uuidv4(),
-            idSpot: nuevoSpot.id,
-            idTipoPesca,
           })) as any[],
           { transaction: t },
         );
@@ -152,44 +130,19 @@ export class SpotRepository {
     return await this.spotModel.findAll({ where: { idUsuario: idUsuario, isDeleted: false } });
   }
 
-  
-  async findAllByTiposPesca(tiposPesca: string[]): Promise<Spot[]> {
-    return this.spotModel.findAll({
-      where: { isDeleted: false },
-      include: [
-        {
-          model: SpotTipoPesca,
-          required: true, 
-          include: [
-            {
-              model: TipoPesca,
-              where: { 
-                [Op.or]: tiposPesca.map(tipo => ({
-                  nombre: { [Op.iLike]: tipo }
-                }))
-              }, 
-            },
-          ],
-        },
-      ],
-    });
-  }
-
 async findAllByEspecies(especies: string[]): Promise<Spot[]> {
-  // Primero, buscar especies que coincidan con los nombres (científicos o comunes)
   const especiesIds = await Especie.findAll({
     include: [
       {
         model: NombreEspecie,
+        as: 'nombresComunes',
         required: false
       }
     ],
     where: {
       [Op.or]: [
-        // Buscar por nombre científico
         { nombreCientifico: { [Op.in]: especies } },
-        // Buscar por cualquier nombre común
-        { '$NombreEspecies.nombre$': { [Op.in]: especies } }
+        { '$nombresComunes.nombre$': { [Op.in]: especies } }
       ]
     }
   });
@@ -200,7 +153,6 @@ async findAllByEspecies(especies: string[]): Promise<Spot[]> {
     return [];
   }
 
-  // Luego buscar spots que tengan esas especies
   return this.spotModel.findAll({
     where: { isDeleted: false },
     include: [

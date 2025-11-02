@@ -20,11 +20,14 @@ export class UsuarioService {
   }
 
   async actualizarUsuario(id: string, body: ActualizarUsuarioDto, foto?: Express.Multer.File) {
-    if (!foto) {
-      body.foto = null; 
-    } else {
+    if (foto) {
       body.foto = `${process.env.direccionDeFoto}/${foto.filename}`;
+    } else if (body.foto) {
+      body.foto = body.foto;
+    } else {
+      body.foto = null;
     }
+
     return await this.usuarioRepository.actualizarUsuario(id, body);
   }
   async findOne(id: string): Promise<Usuario> {
