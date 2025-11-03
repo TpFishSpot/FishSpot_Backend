@@ -40,7 +40,8 @@ export class AuthRolesGuard implements CanActivate {
       const user = await this.userService.findOrCreateUser(
         decodedToken.uid,
         decodedToken.email,
-        decodedToken.name
+        decodedToken.name,
+        decodedToken.picture
       );
       const roles = await this.userService.getUserRoles(decodedToken.uid);
 

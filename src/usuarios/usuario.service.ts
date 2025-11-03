@@ -19,6 +19,10 @@ export class UsuarioService {
     return await this.usuarioRepository.getUserRoles(uid);
   }
 
+  async findOrCreateUser(uid: string, email: string, name?: string, photoURL?: string): Promise<Usuario> {
+    return await this.usuarioRepository.findOrCreateUser(uid, email, name, photoURL);
+  }
+
   async actualizarUsuario(id: string, body: ActualizarUsuarioDto, foto?: Express.Multer.File) {
     if (foto) {
       body.foto = `${process.env.direccionDeFoto}/${foto.filename}`;
