@@ -91,6 +91,22 @@ export class CapturaController {
     return this.capturaService.findCapturasDestacadasBySpot(spotId);
   }
 
+  @Get('estadisticas/globales')
+  @Public()
+  async getEstadisticasGlobales(): Promise<any> {
+    return this.capturaService.obtenerEstadisticasGlobales();
+  }
+
+  @Get('heatmap')
+  @Public()
+  async getHeatmap(
+    @Query('especie') especieId?: string,
+    @Query('mes') mes?: string,
+  ): Promise<any> {
+    const mesNumero = mes ? parseInt(mes) : undefined;
+    return this.capturaService.obtenerHeatmap(especieId, mesNumero);
+  }
+
   @Get('spot/:spotId/estadisticas')
   @Public()
   async getEstadisticasSpot(@Param('spotId') spotId: string): Promise<any> {

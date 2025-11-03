@@ -1,7 +1,7 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import * as dotenv from 'dotenv';
-import { ValidationPipe } from '@nestjs/common';
+import { ValidationPipe, NestApplicationOptions } from '@nestjs/common';
 import { resolve, join } from 'path';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';

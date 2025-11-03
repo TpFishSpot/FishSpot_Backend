@@ -1,9 +1,13 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional, IsString, IsUUID } from 'class-validator';
 
 export class CrearRespuestaDto {
   @IsString()
-  @IsNotEmpty()
-  idSpot: string;
+  @IsOptional()
+  idSpot?: string;
+
+  @IsString()
+  @IsOptional()
+  idCaptura?: string;
 
   @IsString()
   @IsNotEmpty()
