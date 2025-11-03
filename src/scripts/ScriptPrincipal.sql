@@ -143,13 +143,11 @@ CREATE TABLE "Comentario" (
   "id" VARCHAR(255) PRIMARY KEY,
   "idUsuario" VARCHAR(255),
   "idSpot" VARCHAR(255),
-  "idCaptura" VARCHAR(255),
   "idComentarioPadre" VARCHAR(255),
   "contenido" VARCHAR(255),
   "fecha" DATE,
   FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id"),
   FOREIGN KEY ("idSpot") REFERENCES "Spot"("id"),
-  FOREIGN KEY ("idCaptura") REFERENCES "Captura"("id") ON DELETE CASCADE,
   FOREIGN KEY ("idComentarioPadre") REFERENCES "Comentario"("id") ON DELETE CASCADE
 );
 
@@ -1281,7 +1279,6 @@ select * from "Usuario";
 ALTER TABLE "Captura" 
 ADD COLUMN "spotId" VARCHAR(255),
 ADD COLUMN "latitud" DECIMAL(10,8),
-ADD COLUMN "longitud" DECIMAL(11,8),
 ADD COLUMN "tamanio" DECIMAL(6,2);
 
 

@@ -9,7 +9,6 @@ import {
 } from 'sequelize-typescript';
 import { Usuario } from './Usuario';
 import { Spot } from './Spot';
-import { Captura } from './Captura';
 
 @Table({
   tableName: 'Comentario',
@@ -34,17 +33,9 @@ export class Comentario extends Model {
   @Column({
     type: DataType.STRING,
     field: 'idSpot',
-    allowNull: true,
+    allowNull: false,
   })
-  declare idSpot?: string;
-
-  @ForeignKey(() => Captura)
-  @Column({
-    type: DataType.STRING,
-    field: 'idCaptura',
-    allowNull: true,
-  })
-  declare idCaptura?: string;
+  declare idSpot: string;
 
   @ForeignKey(() => Comentario)
   @Column({
@@ -71,10 +62,7 @@ export class Comentario extends Model {
   declare usuario: Usuario;
 
   @BelongsTo(() => Spot)
-  declare spot?: Spot;
-
-  @BelongsTo(() => Captura)
-  declare captura?: Captura;
+  declare spot: Spot;
 
   @BelongsTo(() => Comentario, { foreignKey: 'idComentarioPadre' })
   declare comentarioPadre?: Comentario;

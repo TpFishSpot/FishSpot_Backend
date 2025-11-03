@@ -1,4 +1,4 @@
-import { IsDate, IsOptional, IsString } from "class-validator";
+import { IsDate, IsString } from "class-validator";
 import { Usuario } from "src/models/Usuario";
 
 export class ComentarioDto {
@@ -11,11 +11,7 @@ export class ComentarioDto {
   @IsString()
   idUsuario: string;
   @IsString()
-  @IsOptional()
-  idSpot?: string;
-  @IsString()
-  @IsOptional()
-  idCaptura?: string;
+  idSpot: string;
   
   usuario: Usuario;
   @IsString()

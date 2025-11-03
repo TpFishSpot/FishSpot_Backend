@@ -23,7 +23,7 @@ export class CapturaRepository {
       include: [
         {
           model: Usuario,
-          attributes: ['id', 'nombre', 'email', 'foto']
+          attributes: ['nombre', 'email']
         },
         {
           model: Especie,
@@ -316,25 +316,7 @@ export class CapturaRepository {
 
     return franjas;
   }
-  
-  async findAllWithSpots(): Promise<Captura[]> {
-    return this.capturaModel.findAll({
-      include: [
-        {
-          model: Usuario,
-          attributes: ['id', 'nombre', 'foto']
-        },
-        {
-          model: Especie,
-          attributes: ['id', 'nombreCientifico']
-        },
-        {
-          association: 'spot',
-          attributes: ['id', 'nombre', 'ubicacion']
-        }
-      ]
-   }
-                                     
+
   async cantCapturas(usuarioId: string): Promise<number> {
     return this.capturaModel.count({
         where: { idUsuario: usuarioId }
@@ -352,7 +334,7 @@ export class CapturaRepository {
           [Op.gte]: haceUnAno,
         },
       },
-      order: [['fecha', 'ASC
+      order: [['fecha', 'ASC']],
     });
   }
 }
