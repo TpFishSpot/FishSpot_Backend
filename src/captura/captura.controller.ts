@@ -25,6 +25,7 @@ import { validate } from 'class-validator';
 import { Roles, Public } from 'src/auth/decorator';
 import { RequestWithUser } from 'src/auth/interfaces/auth.interface';
 import { UserRole } from 'src/auth/enums/roles.enum';
+import { CapturasPorMesDto } from 'src/dto/CapturaPorMesDto';
 
 const imageUploadConfig = {
   storage: diskStorage({
@@ -57,6 +58,12 @@ export class CapturaController {
     if (usuario) return this.capturaService.findByUsuario(usuario);
     if (especie) return this.capturaService.findByEspecie(especie);
     return this.capturaService.findAll();
+  }
+
+  @Get(':usuarioId/capturasMensuales')
+  @Public()
+  async capturasMensuales(@Param('usuarioId') usuarioId: string): Promise<CapturasPorMesDto[]> {
+    return this.capturaService.getCapturasPorMes(usuarioId);
   }
 
   @Get('mis-capturas')

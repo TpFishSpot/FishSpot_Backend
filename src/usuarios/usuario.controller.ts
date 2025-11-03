@@ -17,6 +17,7 @@ import { UserRole } from 'src/auth/enums/roles.enum';
 import { ActualizarUsuarioDto } from 'src/dto/ActualizarUsuarioDto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { EstadisticasDto } from 'src/dto/EstadisticasDto';
 
 @Controller('usuario')
 export class UsuarioController {
@@ -27,6 +28,15 @@ export class UsuarioController {
   findAll(): Promise<Usuario[]> {
     return this.usuarioService.findAll();
   }
+
+  @Get(':id/estadisticas')
+  @Public()
+  async estadisticas(
+    @Param('id')id: string
+  ): Promise<EstadisticasDto> {
+    return this.usuarioService.estadisticas(id);
+  }
+
   @Get(':id')
   @Public()
   findOne(@Param('id')id: string): Promise<Usuario> {

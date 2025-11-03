@@ -4,7 +4,7 @@ import { Captura, CapturaCreationProps } from 'src/models/Captura';
 import { Usuario } from 'src/models/Usuario';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
-import { Transaction, QueryTypes } from 'sequelize';
+import { Transaction, QueryTypes, Op } from 'sequelize';
 import { fn, col, literal } from 'sequelize';
 
 @Injectable()
@@ -316,7 +316,7 @@ export class CapturaRepository {
 
     return franjas;
   }
-
+  
   async findAllWithSpots(): Promise<Captura[]> {
     return this.capturaModel.findAll({
       include: [
@@ -333,6 +333,26 @@ export class CapturaRepository {
           attributes: ['id', 'nombre', 'ubicacion']
         }
       ]
+   }
+                                     
+  async cantCapturas(usuarioId: string): Promise<number> {
+    return this.capturaModel.count({
+        where: { idUsuario: usuarioId }
+    });
+  }
+  
+  async findUltimoAnoByUsuario(usuarioId: string): Promise<Captura[]> {
+    const haceUnAno = new Date();
+    haceUnAno.setFullYear(haceUnAno.getFullYear() - 1);
+
+    return this.capturaModel.findAll({
+      where: {
+        idUsuario: usuarioId,
+        fecha: {
+          [Op.gte]: haceUnAno,
+        },
+      },
+      order: [['fecha', 'ASC
     });
   }
 }

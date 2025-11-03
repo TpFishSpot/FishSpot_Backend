@@ -9,6 +9,7 @@ import { SpotEspecie } from 'src/models/SpotEspecie';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
 import { NotFoundException } from '@nestjs/common';
+import { CapturasPorMesDto } from 'src/dto/CapturaPorMesDto';
 
 interface GeoJSONPoint {
   type: 'Point';
