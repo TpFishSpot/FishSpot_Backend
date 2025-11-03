@@ -90,4 +90,8 @@ export class ComentarioService {
       idComentarioPadre: respuesta.idComentarioPadre,
     };
   }
+
+  async cantComentarios(usuarioId: string): Promise<number>{
+    return await this.comentarioRepository.cantComentarios(usuarioId);
+  }
 }

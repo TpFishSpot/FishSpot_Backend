@@ -1,11 +1,15 @@
-import { Module } from '@nestjs/common';
+import { forwardRef, Module } from '@nestjs/common';
 import { SequelizeModule } from '@nestjs/sequelize';
 import { Usuario } from 'src/models/Usuario';
 import { UsuarioService } from './usuario.service';
 import { UsuarioRepository } from './usuario.repository';
 import { UsuarioController } from './usuario.controller';
-import { UsuarioRol } from 'src/models/UsuarioRol';
+import { UsuarioRol } from '../models/UsuarioRol';
 import { Rol } from 'src/models/Rol';
+import { ComentarioModule } from '../comentario/comentario.module';
+import { SpotModule } from '../spots/spot.module';
+import { CapturaModule } from '../captura/captura.module';
+import { AuthModule } from '../auth/auth.module';
 
 @Module({
   imports: [
@@ -14,6 +18,10 @@ import { Rol } from 'src/models/Rol';
         UsuarioRol,
         Rol,
     ]),
+    forwardRef(() => ComentarioModule),
+    forwardRef(() => SpotModule),
+    forwardRef(() => CapturaModule),
+    forwardRef(() => AuthModule),
   ],
   providers: [
     UsuarioService,

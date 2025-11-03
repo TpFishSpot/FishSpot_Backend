@@ -107,4 +107,8 @@ export class SpotService {
   async getSpotsByUser(idUsuario: string): Promise<Spot[]> {
     return await this.spotRepository.findByUser(idUsuario);
   }
+
+  async cantSpots(usuarioId: string): Promise<number>{
+    return this.spotRepository.cantSpots(usuarioId);
+  }
 }

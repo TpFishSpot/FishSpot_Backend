@@ -34,5 +34,6 @@ import { AuthModule } from 'src/auth/auth.module';
     SpotRepository,
   ],
   controllers: [SpotController],
+  exports:[SpotService],
 })
 export class SpotModule {}
