@@ -333,6 +333,7 @@ export class CapturaRepository {
           attributes: ['id', 'nombre', 'ubicacion']
         }
       ]
+    })
    }
                                      
   async cantCapturas(usuarioId: string): Promise<number> {
@@ -352,7 +353,7 @@ export class CapturaRepository {
           [Op.gte]: haceUnAno,
         },
       },
-      order: [['fecha', 'ASC
+      order: [['fecha', 'ASC']],
     });
   }
 }

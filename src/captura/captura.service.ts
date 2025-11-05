@@ -429,4 +429,31 @@ async create(
 
     return { puntos };
   }
+
+  async cantCapturas(usuarioId: string): Promise<number>{
+    return this.capturaRepository.cantCapturas(usuarioId);
+  }
+
+  async getCapturasPorMes(usuarioId: string): Promise<CapturasPorMesDto[]> {
+    const capturas = await this.capturaRepository.findUltimoAnoByUsuario(usuarioId);
+
+    const resumen: CapturasPorMesDto[] = [];
+
+    for (const captura of capturas) {
+      const mes = captura.fecha.toLocaleString('default', { month: 'short' });
+      const existente = resumen.find(r => r.mes === mes);
+
+      if (existente) {
+        existente.cantidad++;
+      } else {
+        resumen.push({ mes, cantidad: 1 });
+      }
+    }
+
+    return resumen.sort(
+      (a, b) =>
+        new Date(`${a.mes} 1, 2000`).getTime() -
+        new Date(`${b.mes} 1, 2000`).getTime()
+    );
+  }
 }
