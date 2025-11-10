@@ -52,14 +52,21 @@ export class SpotController {
 
   @Get()
   @Public()
-  async findSpots(@Query('idUsuario') idUsuario?: string): Promise<Spot[]> {
-    if (idUsuario) {
-      return await this.spotService.getSpotsByUser(idUsuario);
-    }
-    return await this.spotService.findAll();
+  async findSpots(
+    @Query('idUsuario') idUsuario?: string,
+    @Query('page') page = '1',
+    @Query('estado') estado?: string,
+  ) {
+    const pageNumber = parseInt(page, 10);
+
+    return await this.spotService.findAllPaginado({
+      idUsuario,
+      estado,
+      page: pageNumber,
+    });
   }
 
-  @Get('esperando')
+  @Get('/esperando')
   @Roles(UserRole.MODERATOR)
   esperando(): Promise<Spot[]> {
     return this.spotService.esperando();

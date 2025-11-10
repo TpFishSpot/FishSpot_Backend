@@ -6,7 +6,6 @@ import { SpotCarnadaEspecie } from 'src/models/SpotCarnadaEspecie';
 import { EspecieConNombreComun } from 'src/dto/EspecieConNombreComun';
 import { Especie } from 'src/models/Especie';
 import { NombreEspecie } from 'src/models/NombreEspecie';
-import { TipoPesca } from 'src/models/TipoPesca';
 import { Op, Transaction } from 'sequelize';
 import { v4 as uuidv4 } from 'uuid';
 import { EstadoSpot } from 'src/models/EstadoSpot';
@@ -178,4 +177,49 @@ async findAllByEspecies(especies: string[]): Promise<Spot[]> {
     });
   }
 
+  async findAllPaginado({
+    idUsuario,
+    estado,
+    offset,
+    limit,
+  }: {
+    idUsuario?: string
+    estado?: string
+    offset: number
+    limit: number
+  }) {
+    const where: any = { isDeleted: false }
+
+    if (idUsuario) where.idUsuario = idUsuario
+
+    if (estado && estado.toLowerCase() !== "all") {
+      const validStates = ["Esperando", "Aceptado", "Rechazado", "Inactivo"]
+
+      const normalized =
+        estado.charAt(0).toUpperCase() + estado.slice(1).toLowerCase()
+
+      if (validStates.includes(normalized)) {
+        where.estado = normalized
+      } else {
+        console.warn(`⚠️ Estado inválido recibido: ${estado}`)
+      }
+    }
+
+    const { rows, count } = await this.spotModel.findAndCountAll({
+      where,
+      offset,
+      limit,
+      order: [["fechaPublicacion", "DESC"]],
+      distinct: true,
+    })
+
+    const totalPages = Math.ceil(count / limit)
+
+    return {
+      data: rows,
+      total: count,
+      totalPages,
+    }
+  }
+ 
 }
