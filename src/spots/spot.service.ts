@@ -111,4 +111,24 @@ export class SpotService {
   async cantSpots(usuarioId: string): Promise<number>{
     return this.spotRepository.cantSpots(usuarioId);
   }
+
+  async findAllPaginado({
+    idUsuario,
+    estado,
+    page,
+  }: {
+    idUsuario?: string;
+    estado?: string; 
+    page: number;
+  }) {
+    const limit = 4;
+    const offset = (page - 1) * limit;
+    return await this.spotRepository.findAllPaginado({
+      idUsuario,
+      estado,
+      offset,
+      limit,
+    });
+  }
+
 }
