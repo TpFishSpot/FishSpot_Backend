@@ -139,6 +139,39 @@ CREATE TABLE "SpotCarnadaEspecie" (
   FOREIGN KEY ("idCarnada") REFERENCES "Carnada"("id")
 );
 
+CREATE TABLE "EspecieTipoPesca" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idEspecie" VARCHAR(255) NOT NULL,
+  "idTipoPesca" VARCHAR(255) NOT NULL,
+  "descripcion" TEXT,
+  FOREIGN KEY ("idEspecie") REFERENCES "Especie"("id"),
+  FOREIGN KEY ("idTipoPesca") REFERENCES "TipoPesca"("id")
+);
+
+CREATE TABLE "Captura" (
+  "id" VARCHAR(255) PRIMARY KEY,
+  "idUsuario" VARCHAR(255) NOT NULL,
+  "especieId" VARCHAR(255) NOT NULL,
+  "fecha" DATE NOT NULL,
+  "ubicacion" VARCHAR(500) NOT NULL,
+  "peso" DECIMAL(8,2),
+  "tamanio" DECIMAL(6,2),
+  "carnada" VARCHAR(255) NOT NULL,
+  "tipoPesca" VARCHAR(255) NOT NULL,
+  "foto" VARCHAR(255),
+  "notas" TEXT,
+  "clima" VARCHAR(100),
+  "horaCaptura" TIME,
+  "spotId" VARCHAR(255),
+  "latitud" DECIMAL(10,8),
+  "longitud" DECIMAL(11,8),
+  "fechaCreacion" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  "fechaActualizacion" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id") ON DELETE CASCADE,
+  FOREIGN KEY ("especieId") REFERENCES "Especie"("id") ON DELETE RESTRICT,
+  FOREIGN KEY ("spotId") REFERENCES "Spot"("id") ON DELETE SET NULL
+);
+
 CREATE TABLE "Comentario" (
   "id" VARCHAR(255) PRIMARY KEY,
   "idUsuario" VARCHAR(255),
@@ -165,36 +198,6 @@ CREATE TABLE "SolicitudDeDato" (
   FOREIGN KEY ("idEspecie") REFERENCES "Especie"("id")
 );
 
-CREATE TABLE "EspecieTipoPesca" (
-  "id" VARCHAR(255) PRIMARY KEY,
-  "idEspecie" VARCHAR(255) NOT NULL,
-  "idTipoPesca" VARCHAR(255) NOT NULL,
-  "descripcion" TEXT,
-  FOREIGN KEY ("idEspecie") REFERENCES "Especie"("id"),
-  FOREIGN KEY ("idTipoPesca") REFERENCES "TipoPesca"("id")
-);
-
-CREATE TABLE "Captura" (
-  "id" VARCHAR(255) PRIMARY KEY,
-  "idUsuario" VARCHAR(255) NOT NULL,
-  "especieId" VARCHAR(255) NOT NULL,
-  "fecha" DATE NOT NULL,
-  "ubicacion" VARCHAR(500) NOT NULL,
-  "peso" DECIMAL(8,2),
-  "longitud" DECIMAL(6,2),
-  "carnada" VARCHAR(255) NOT NULL,
-  "tipoPesca" VARCHAR(255) NOT NULL,
-  "foto" VARCHAR(255),
-  "notas" TEXT,
-  "clima" VARCHAR(100),
-  "horaCaptura" TIME,
-  "fechaCreacion" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  "fechaActualizacion" TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY ("idUsuario") REFERENCES "Usuario"("id") ON DELETE CASCADE,
-  FOREIGN KEY ("especieId") REFERENCES "Especie"("id") ON DELETE RESTRICT
-);
-
-
 CREATE TABLE "Reporte" (
   "id" VARCHAR(255) PRIMARY KEY,
   "idSpot" VARCHAR(255) NOT NULL,
@@ -214,6 +217,9 @@ CREATE INDEX idx_captura_usuario ON "Captura"("idUsuario");
 CREATE INDEX idx_captura_especie ON "Captura"("especieId");
 CREATE INDEX idx_captura_fecha ON "Captura"("fecha");
 CREATE INDEX idx_captura_fecha_creacion ON "Captura"("fechaCreacion");
+CREATE INDEX idx_captura_spotId ON "Captura"("spotId");
+CREATE INDEX idx_captura_peso ON "Captura"("peso" DESC NULLS LAST);
+CREATE INDEX idx_captura_tamanio ON "Captura"("tamanio" DESC NULLS LAST);
 CREATE INDEX idx_spot_ubicacion ON "Spot" USING GIST("ubicacion");
 CREATE INDEX idx_spot_estado ON "Spot"("estado");
 CREATE INDEX idx_reporte_spot ON "Reporte"("idSpot");
@@ -237,52 +243,71 @@ CREATE TRIGGER trigger_update_captura_fecha
   FOR EACH ROW
   EXECUTE FUNCTION update_captura_fecha_actualizacion();
 
---  DATOS BASE
+-- ============================================================
+-- DATOS DE EJEMPLO - USUARIOS Y ROLES
+-- ============================================================
 
-INSERT INTO "Usuario" ("id", "nombre", "nivelPescador", "email") VALUES
-  ('usuario1', 'Carlos Tarucha', 'Avanzado', 'carlos@example.com'),
-  ('usuario2', 'Lucía Señuelera', 'Experto', 'lucia@example.com'),
-  ('Dg5rIRf4FLRXcQ5BKwZJj5OFlCG2', 'Pescador Firebase', 'Intermedio', 'firebase@fishspot.com');
-
+-- Tabla Rol
 INSERT INTO "Rol" ("id", "nombre") VALUES
   ('rol1', 'usuario'),
-  ('rol2', 'moderador');
+  ('rol2', 'moderador'),
+  ('rol3', 'administrador');
 
+-- Tabla Usuario
+INSERT INTO "Usuario" ("id", "nombre", "nivelPescador", "email", "foto") VALUES
+  ('usuario1', 'Carlos Tarucha', 'Avanzado', 'carlos.tarucha@fishspot.com', 'uploads/usuarios/carlos.jpg'),
+  ('usuario2', 'Lucía Señuelera', 'Experto', 'lucia.senuelera@fishspot.com', 'uploads/usuarios/lucia.jpg');
+
+-- Tabla UsuarioRol
 INSERT INTO "UsuarioRol" ("usuarioId", "rolId") VALUES
   ('usuario1', 'rol1'),
   ('usuario1', 'rol2'),
   ('usuario2', 'rol1');
 
 
+-- ============================================================
+-- DATOS DE EJEMPLO - TIPOS DE PESCA (18 TÉCNICAS ARGENTINAS)
+-- ============================================================
+
 INSERT INTO "TipoPesca" ("id", "nombre", "descripcion") VALUES
-  ('tp1', 'Spinning', 'Pesca con señuelos artificiales usando caña ligera y reel frontal (spinning). Caña entre 1,8 y 2,4 m, acción media, señuelos blandos o duros.'),
-  ('tp2', 'Bait Casting', 'Pesca con caña corta y rígida (1,7 a 2,1 m) y reel rotativo baitcasting montado arriba de la caña. Ideal para precisión con señuelos.'),
-  ('tp3', 'Pesca de Fondo', 'Caña larga y fuerte (2,7 a 4 m), reel frontal o rotativo, línea con plomada que descansa en el fondo. Usada con carnadas naturales.'),
-  ('tp4', 'Pesca de Flote', 'Caña de 2 a 3,5 m, reel frontal ligero y boyas como indicador de pique. Ideal para pejerrey y especies de superficie.'),
-  ('tp5', 'Mosca (Fly Fishing)', 'Caña flexible y ligera (2,1 a 3 m), carrete mosquero y línea pesada con moscas artificiales. Técnica de lanzado elegante.'),
-  ('tp6', 'Trolling', 'Pesca desde embarcación en movimiento. Caña robusta, reel rotativo de gran capacidad y señuelos pesados o cucharas.'),
-  ('tp7', 'Surfcasting', 'Pesca desde la playa. Cañas largas (3,6 a 4,5 m), potentes para lanzamientos lejanos, reels frontales de gran capacidad y plomos pesados.'),
-  ('tp8', 'Curricán de Fondo', 'Variante del trolling con plomos para arrastrar señuelos a mayor profundidad. Cañas cortas y potentes, reels rotativos.'),
-  ('tp9', 'Jigging', 'Caña corta y rígida (1,5 a 2 m), reel rotativo o frontal de alto poder, señuelos metálicos (jigs) trabajados verticalmente en aguas profundas.'),
-  ('tp10', 'Mosca de Superficie', 'Variante del fly fishing con imitaciones flotantes. Caña mosquera ligera, línea flotante, moscas secas o poppers.'),
-  ('tp11', 'Handline (Pesca a Mano)', 'Sin caña. Solo nylon y anzuelo con plomada o carnada. Técnica tradicional y simple.'),
-  ('tp12', 'Pesca a Camalote', 'Caña media a larga, reel frontal, carnada natural. Se practica a la deriva siguiendo vegetación flotante en ríos.'),
-  ('tp13', 'Pesca con Red de Mano', 'Sin caña ni reel. Uso de red de aro o trampa de mano, técnica artesanal para aguas bajas o charcos.'),
-  ('tp14', 'Pesca con Cebado', 'Caña media, reel frontal o fijo. Se arroja alimento (maíz, masa, etc.) para atraer peces. Muy usada para carpas.'),
-  ('tp15', 'Pesca Submarina', 'Sin caña ni reel. Uso de arpón, fusil submarino o hawaiana, practicada en apnea con snorkel o buceo.'),
-  ('tp16', 'Mojarrero', 'Técnica argentina tradicional con equipos ultra livianos. Caña telescópica bambú o carbono 3,5-4,5 m, reel pequeño 1000-2000, línea monofilamento 0,14-0,18 mm. Para especies chicas en arroyos, canales y lagunas pampeanas: mojarras, dientudos, chanchitas. Anzuelos pequeños N°12-16. Carnadas: lombriz cortada, bolita de pan, larvas. Técnica de paciencia, presentación natural.'),
-  ('tp17', 'Pesca a la Cueva', 'Técnica específica para estructuras cerradas. Caña corta 1,5-1,8 m, acción rápida, reel preciso. Lanzamientos cortos bajo troncos, ramas sumergidas, cuevas rocosas. Para tarariras, palometas, chanchitas territoriales. Requiere precisión milimétrica. Carnadas: señuelos compactos, carnada viva en anzuelo sin plomo. Líneas resistentes a abrasión.'),
-  ('tp18', 'Variada', 'Técnica de río con múltiples anzuelos y carnadas simultáneas. Caña larga 3-4 m, reel frontal grande, línea madre gruesa 0,30-0,35 mm, ramales finos 0,20-0,25 mm. Para pescar varias especies juntas: bagres, bogas, mojarras, sábalos. Plomada corrida, 3-5 anzuelos diferentes tamaños y carnadas. Efectiva en correntadas medianas.'),
-  ('tp19', 'Embarcado Fondeado', 'Pesca de espera desde embarcación anclada. Múltiples cañas largas 3-4 m, reels frontales grandes, portacañas. En pozones profundos para bagres grandes, surubíes, dorados de fondo. Carnadas vivas y muertas simultáneas. Fondos de 8-25 metros. Técnica nocturna principalmente. Requiere GPS y ecosonda.'),
-  ('tp20', 'Pesca Nocturna Especializada', 'Equipos súper robustos para gigantes nocturnos. Cañas pesadas 3-3,5 m acción extra heavy, reels rotativos de alta capacidad, líneas gruesas 0,45-0,60 mm, leaders de acero 50-80 cm. Para manguruyús, surubíes gigantes, pacúes grandes. Carnadas vivas grandes (20-40 cm). Anzuelos 8/0-12/0. Plomos 100-200 gr.'),
-  ('tp21', 'Pesca al Correntino', 'Técnica del nordeste argentino. Caña media 2,5-3 m, reel frontal, línea 0,25-0,30 mm. Se pesca dejando derivar la carnada en la corriente natural del río. Para dorados, surubíes, pacúes en ríos correntosos. Carnada natural en anzuelo simple, plomada ligera o sin plomo. Efectiva en barrancas y correderas.'),
-  ('tp22', 'Carpfishing Argentino', 'Adaptación local del carpfishing europeo. Cañas largas 3,6-4,2 m, reels frontales grandes con freno suave, líneas 0,35-0,40 mm. Para carpas grandes en lagunas. Técnica de cebado previo, múltiples cañas, alarmas electrónicas. Carnadas: boilies caseros, maíz fermentado, papa hervida con esencias. Pesca de 24-48 horas.'),
-  ('tp23', 'Pesca a la Madrugada', 'Técnica específica para primeras horas. Equipos medianos, carnadas naturales frescas. Efectiva para especies que se alimentan en bajante de temperatura nocturna: bagres, bogas, pacúes. Horario: 4:00-8:00 AM. Presentación silenciosa, movimientos mínimos. Muy productiva en verano.'),
-  ('tp24', 'Técnica del Tarucho', 'Pesca especializada para tarariras grandes. Caña baitcasting 2-2,2 m, reel rotativo preciso, línea trenzada 0,25-0,30 mm, leader fluorocarbono 50-60 cm. Señuelos de superficie grandes (12-18 cm), trabajados agresivamente. Lanzamientos a vegetación densa, estructuras sumergidas.'),
-  ('tp25', 'Spinning Patagónico', 'Técnica para truchas y salmones en lagos profundos. Caña spinning 2,4-2,7 m acción media-rápida, reel frontal 3000-4000, línea trenzada 0,14-0,18 mm, leader fluorocarbono 3-5 m. Cucharitas rotativas, spoons, jigs verticales. Pesca desde costa en lagos patagónicos. Efectiva todo el año.'),
-  ('tp26', 'Trolling Lacustre', 'Pesca al curricán en grandes lagos patagónicos. Caña trolling 2,1-2,4 m acción parabólica, reel rotativo con contador línea, línea 0,35-0,50 mm, plomadas de trolling 100-300 g. Para truchas grandes, salmones encerrados, percas. Velocidad 2-4 nudos, profundidad 5-25 m.'),
-  ('tp27', 'Fly Fishing Ninfeo', 'Pesca con mosca bajo superficie. Caña #4-6 de 2,7-3 m, línea hundimiento intermedio, tippet 0,14-0,18 mm, ninfas lastradas. Para truchas en ríos correntosos. Deriva natural, tensión controlada. Indicador de picada. Muy efectiva en aguas frías y claras.'),
-  ('tp28', 'Pesca en Espejos', 'Técnica para lagunas pequeñas patagónicas. Caña ligera 1,8-2,4 m, reel pequeño 1000-2000, línea 0,16-0,20 mm, anzuelos #8-12, plomadas 5-15 g. Para puyenes, percas chicas, pejerreyes patagónicos. Presentación delicada, carnadas naturales pequeñas.');
+  ('tp1', 'Spinning', 'Técnica más popular en Argentina. Caña 1,8-2,4 m con reel frontal para lanzar señuelos artificiales (poppers, cucharitas, paseantes). Ideal para dorados, tarariras y truchas. Acción media, líneas 0,20-0,35 mm según especie objetivo.'),
+  
+  ('tp2', 'Bait Casting', 'Técnica de precisión con reel rotativo montado arriba de la caña. Caña 1,7-2,1 m rígida para señuelos pesados. Muy usada para dorados y tarariras grandes. Requiere práctica para evitar "pelucas". Líneas 0,25-0,40 mm.'),
+  
+  ('tp3', 'Pesca de Fondo', 'La más tradicional argentina. Caña 2,7-4 m con plomada al fondo y carnadas naturales. Para bagres, surubíes, pacúes. Desde costa o embarcación. Pesca de espera, mejor de noche. Líneas 0,30-0,50 mm.'),
+  
+  ('tp4', 'Pesca con Flote', 'Clásica para pejerrey en lagunas bonaerenses. Caña 2-3,5 m con boya como indicador. Carnadas pequeñas (mojarra, lombriz). Técnica delicada con líneas finas 0,16-0,20 mm. Muy popular en la Pampa húmeda.'),
+  
+  ('tp5', 'Fly Fishing (Mosca)', 'Técnica refinada para truchas patagónicas. Caña ligera 2,1-3 m con carrete mosquero. Moscas secas, ninfas o streamers según situación. Lanzado elegante, presentación natural. Muy popular en ríos del sur.'),
+  
+  ('tp6', 'Trolling (Curricán)', 'Pesca desde embarcación en movimiento. Señuelos o cucharas arrastradas detrás del bote. Para dorados, surubíes y truchas grandes. Caña robusta 2-2,4 m, reel rotativo, líneas 0,35-0,50 mm. Común en ríos grandes y lagos.'),
+  
+  ('tp7', 'Variada', 'Técnica de río con múltiples anzuelos (3-5) y carnadas simultáneas en la misma línea. Para pescar varias especies juntas: bagres, bogas, mojarras. Caña larga 3-4 m, efectiva en corrientes medianas. Muy práctica y productiva.'),
+  
+  ('tp8', 'Mojarrero', 'Técnica tradicional argentina para especies chicas. Equipos ultra livianos, caña telescópica 3,5-4,5 m, anzuelos pequeños N°12-16. Para mojarras, dientudos, chanchitas en arroyos y canales. Requiere paciencia y fineza.'),
+  
+  ('tp9', 'Embarcado Fondeado', 'Pesca de espera desde bote anclado en pozones profundos. Múltiples cañas simultáneas con carnadas vivas. Para grandes bagres y surubíes. Principalmente nocturna. Requiere ecosonda y GPS.'),
+  
+  ('tp10', 'Carpfishing', 'Técnica especializada para carpas grandes en lagunas. Cañas largas 3,6-4,2 m, cebado previo, múltiples líneas. Carnadas: boilies, maíz fermentado, papa. Pesca de larga duración (24-48 hs). Alarmas electrónicas.'),
+  
+  ('tp11', 'Spinning Patagónico', 'Variante para aguas frías del sur. Caña 2,4-2,7 m, cucharitas rotativas y spoons para truchas y percas. Línea trenzada fina con leader largo. Técnica desde costa en lagos y ríos patagónicos.'),
+  
+  ('tp12', 'Pesca a la Cueva', 'Técnica específica para tarariras bajo estructuras. Caña corta 1,5-1,8 m, lanzamientos precisos bajo troncos, ramas y vegetación densa. Señuelos compactos o carnada viva. Requiere precisión milimétrica.'),
+  
+  ('tp13', 'Pesca al Correntino', 'Técnica del litoral argentino. Se deja derivar la carnada naturalmente en la corriente del río. Para dorados, surubíes y pacúes. Caña 2,5-3 m, plomada ligera o sin plomo. Efectiva en barrancas y correderas.'),
+  
+  ('tp14', 'Surfcasting', 'Pesca desde playa en costa atlántica. Cañas largas 3,6-4,5 m para lanzamientos lejanos. Para corvinas, pescadillas, gatuzos. Carnadas naturales: camarón, calamar, filet. Mar del Plata, Necochea, Miramar.'),
+  
+  ('tp15', 'Jigging Vertical', 'Técnica moderna con jigs metálicos trabajados verticalmente. Para percas patagónicas en lagos profundos y dorados en pozones. Caña corta rígida 1,5-2 m, movimientos de muñeca. Muy efectiva pero demandante.'),
+  
+  ('tp16', 'Pesca Nocturna de Bagres', 'Especializada para bagres gigantes (surubíes, manguruyús, patíes). Equipos robustos, carnadas vivas grandes (20-40 cm), líneas gruesas 0,45-0,60 mm. Anzuelos 8/0-12/0. Solo de noche en pozones profundos.'),
+  
+  ('tp17', 'Pesca con Boya Corrediza', 'Técnica mixta entre flote y fondo. Boya deslizante que permite regular profundidad. Para bogas, sábalos y carpas en corrientes. Caña 2,5-3 m, línea 0,25-0,30 mm. Muy versátil y efectiva.');
+
+
+-- ============================================================
+-- DATOS DE EJEMPLO - ESPECIES (41 ESPECIES ARGENTINAS)
+-- ============================================================
 
 INSERT INTO "Especie" ("id", "nombreCientifico", "descripcion", "imagen") VALUES
 ('es2', 'Salminus brasiliensis',
@@ -557,263 +582,239 @@ INSERT INTO "NombreComunEspecie" ("id", "idEspecie", "nombre") VALUES
   ('nc98', 'es41', 'Bagre patagónico'),
   ('nc99', 'es41', 'Diplomystes');
 
+-- ============================================================
+-- DATOS DE EJEMPLO - CARNADAS (30 MÁS REPRESENTATIVAS)
+-- ============================================================
+
 INSERT INTO "Carnada" ("id", "nombre", "tipoCarnada", "descripcion") VALUES
-  -- Artificiales blandos
-  ('c1', 'Señuelo rana', 'ArtificialBlando', 'Señuelo blando en forma de rana para superficie.'),
-  ('c2', 'Señuelo lombriz siliconada', 'ArtificialBlando', 'Imitación de lombriz en silicona, muy usada para tarariras y black bass.'),
-  ('c3', 'Grub de vinilo', 'ArtificialBlando', 'Señuelo blando en forma de larva o grub.'),
-  ('c4', 'Shad siliconado', 'ArtificialBlando', 'Pez blando de vinilo con cola vibrátil.'),
-  ('c5', 'Cangrejo artificial', 'ArtificialBlando', 'Imitación blanda de cangrejo para pesca de fondo.'),
-  ('c6', 'Jig con vinilo', 'ArtificialBlando', 'Cabeza plomada con cuerpo de silicona.'),
-  ('c7', 'Minnow blando', 'ArtificialBlando', 'Señuelo flexible imitando pez pequeño.'),
-  ('c8', 'Lagartija blanda', 'ArtificialBlando', 'Imitación de lagarto o salamandra en goma blanda.'),
+  -- ARTIFICIALES BLANDOS (4)
+  ('c1', 'Rana artificial', 'ArtificialBlando', 'Señuelo blando imitación rana para superficie. Clásico para tarariras en lagunas con vegetación. Colores naturales verde y marrón.'),
+  ('c2', 'Lombriz siliconada', 'ArtificialBlando', 'Imitación realista de lombriz en silicona. Versátil para tarariras, bagres y black bass. Acción natural bajo el agua.'),
+  ('c3', 'Shad vinilo', 'ArtificialBlando', 'Pez blando con cola vibrátil tipo paddle tail. Efectivo para dorados y surubíes. Tamaños 8-15 cm.'),
+  ('c4', 'Jig cabeza plomada', 'ArtificialBlando', 'Cabeza de plomo con cuerpo de silicona. Versátil para pesca vertical y casting. Varios pesos según profundidad.'),
 
-  -- Artificiales duros
-  ('c9', 'Señuelo crankbait', 'ArtificialDuro', 'Señuelo duro con paleta para profundidad.'),
-  ('c10', 'Popper', 'ArtificialDuro', 'Señuelo de superficie que genera burbujas y ruidos.'),
-  ('c11', 'Paseante', 'ArtificialDuro', 'Señuelo de superficie zigzagueante (walk the dog).'),
-  ('c12', 'Jerkbait', 'ArtificialDuro', 'Señuelo duro que se mueve con tirones de caña.'),
-  ('c13', 'Spinnerbait', 'ArtificialDuro', 'Señuelo con cucharilla giratoria y faldín.'),
-  ('c14', 'Cucharita ondulante', 'ArtificialDuro', 'Cucharilla metálica que oscila bajo el agua.'),
-  ('c15', 'Cucharita giratoria', 'ArtificialDuro', 'Cucharilla con pala giratoria muy usada en truchas.'),
-  ('c16', 'Lipless crankbait', 'ArtificialDuro', 'Señuelo duro sin paleta con vibración fuerte.'),
-  ('c17', 'Stickbait', 'ArtificialDuro', 'Señuelo alargado de superficie, acción lineal.'),
-  ('c18', 'Poppers articulado', 'ArtificialDuro', 'Popper de varios segmentos que genera salpicaduras.'),
+  -- ARTIFICIALES DUROS (6)
+  ('c5', 'Popper', 'ArtificialDuro', 'Señuelo de superficie que genera burbujas y estallidos. Icónico para dorados al amanecer. Acción "pop" con pausas.'),
+  ('c6', 'Paseante', 'ArtificialDuro', 'Señuelo flotante zigzagueante (walk the dog). Excelente para tarariras y dorados. Acción errática en superficie.'),
+  ('c7', 'Cucharita giratoria', 'ArtificialDuro', 'Cuchara con pala giratoria. La más popular para truchas patagónicas. Plateada o dorada, tamaños N°2-4.'),
+  ('c8', 'Cucharita ondulante', 'ArtificialDuro', 'Cuchara metálica que oscila. Efectiva para dorados y truchas grandes. Acción errática imitando pez herido.'),
+  ('c9', 'Crankbait', 'ArtificialDuro', 'Señuelo con paleta para alcanzar profundidad. Para dorados y tarariras en pozones. Colores naturales y llamativos.'),
+  ('c10', 'Spinnerbait', 'ArtificialDuro', 'Señuelo con cucharilla giratoria y faldín. Bueno para aguas con vegetación. Efectivo para tarariras y black bass.'),
 
-  -- Naturales
-  ('c19', 'Lombriz común', 'Natural', 'Carnada natural clásica para mojarras y bagres.'),
-  ('c20', 'Tripas de pollo', 'Natural', 'Tripas frescas muy usadas para bagres y patí.'),
-  ('c21', 'Carne vacuna', 'Natural', 'Trozos de carne usados para dorados y bagres grandes.'),
-  ('c22', 'Masa casera', 'Natural', 'Masa de harina y esencia, usada para carpas.'),
-  ('c23', 'Queso', 'Natural', 'Cubos de queso como carnada alternativa para carpas y bogas.'),
-  ('c24', 'Panceta', 'Natural', 'Trozo de panceta salada para dorado o surubí.'),
-  ('c25', 'Langostino', 'Natural', 'Carne de langostino como carnada de río o mar.'),
-  ('c26', 'Pan remojado', 'Natural', 'Pan húmedo como carnada simple para mojarras.'),
-  ('c27', 'Maíz hervido', 'Natural', 'Granos de maíz cocidos para carpas y bogas.'),
+  -- MOSCAS ARTIFICIALES (4)
+  ('c11', 'Mosca seca', 'MoscaArtificial', 'Imitación flotante de insectos adultos. Esencial para truchas en eclosión. Tamaños #12-18 según especie.'),
+  ('c12', 'Ninfa', 'MoscaArtificial', 'Imitación de larva acuática sumergida. Muy efectiva para truchas en pozones. Con o sin lastre.'),
+  ('c13', 'Streamer', 'MoscaArtificial', 'Mosca grande imitando pez pequeño. Para truchas grandes y percas. Colores natural, blanco y negro.'),
+  ('c14', 'Mosca ahogada', 'MoscaArtificial', 'Imitación sumergida de insectos. Técnica tradicional patagónica. Deriva natural bajo superficie.'),
 
-  -- Vivas
-  ('c28', 'Mojarra viva', 'Viva', 'Pez pequeño vivo usado para dorado y tararira.'),
-  ('c29', 'Morena viva', 'Viva', 'Anguila criolla usada como carnada viva en el río.'),
-  ('c30', 'Camarón vivo', 'Viva', 'Camarón de agua dulce usado como carnada.'),
+  -- CARNADAS NATURALES (11)
+  ('c15', 'Lombriz común', 'Natural', 'La carnada más universal argentina. Efectiva para casi todas las especies. Fresca o salada. Imprescindible.'),
+  ('c16', 'Maíz hervido', 'Natural', 'Granos cocidos amarillos. Clásico para carpas, bogas y pacúes. Se puede aromatizar con esencias.'),
+  ('c17', 'Masa casera', 'Natural', 'Masa de harina con agua y esencia. Tradicional para pejerrey, carpa y boga. Se amasa en anzuelo.'),
+  ('c18', 'Mburucuyá', 'Natural', 'Fruto del maracuyá (pasionaria). Irresistible para pacúes. Muy efectivo en verano y otoño.'),
+  ('c19', 'Papa hervida', 'Natural', 'Papa cocida en cubos. Excelente para carpas grandes. Aguanta bien en anzuelo. Popular en carpfishing.'),
+  ('c20', 'Tripas de pollo', 'Natural', 'Vísceras frescas o saladas. Carnada fuerte para bagres nocturnos. Olor potente atrae desde lejos.'),
+  ('c21', 'Hígado de pollo', 'Natural', 'Víscera blanda muy atractiva. Para bagres, surubíes y patíes. Mejor de noche. Requiere anzuelo grande.'),
+  ('c22', 'Pan mojado', 'Natural', 'Miga de pan húmeda en bolita. Carnada simple para mojarras y pejerrey chico. Ideal para principiantes.'),
+  ('c23', 'Grillo', 'Natural', 'Insecto vivo muy efectivo. Para truchas, pejerreyes y dientudos. Se engancha por el lomo. Estacional.'),
+  ('c24', 'Isoca', 'Natural', 'Larva de mariposa nocturna verde. Carnada premium para truchas. Difícil de conseguir, muy efectiva.'),
+  ('c25', 'Boilies', 'Natural', 'Masa hervida con proteínas. Especializada para carpfishing. Varios sabores: frutos rojos, pescado, hígado.'),
 
-  -- Carnadas argentinas adicionales
-  ('c31', 'Mburucuyá', 'Natural', 'Fruto del maracuyá muy efectivo para pacúes.'),
-  ('c32', 'Papa hervida', 'Natural', 'Papa cocida, excelente para carpas y bogas.'),
-  ('c33', 'Filet de mojarra', 'CarnadaMuerta', 'Trozo de mojarra para pejerrey y truchas.'),
-  ('c34', 'Hígado de pollo', 'Natural', 'Víscera muy atractiva para bagres nocturnos.'),
-  ('c35', 'Grillo', 'Natural', 'Insecto vivo ideal para truchas y pejerreyes.'),
-  ('c36', 'Mosca ahogada', 'MoscaArtificial', 'Imitación sumergida de insectos acuáticos.'),
-  ('c37', 'Ninfa', 'MoscaArtificial', 'Imitación de larva acuática para truchas.'),
-  ('c38', 'Streamer', 'MoscaArtificial', 'Mosca que imita peces pequeños.'),
-  ('c39', 'Mosca seca', 'MoscaArtificial', 'Imitación flotante de insectos adultos.'),
-  ('c40', 'Sanguijuela', 'Natural', 'Gusano acuático natural muy efectivo.'),
+  -- CARNADAS VIVAS (3)
+  ('c26', 'Mojarra viva', 'Viva', 'Pez pequeño vivo 8-15 cm. Carnada premium para dorados, tarariras y surubíes. Se engancha por el lomo.'),
+  ('c27', 'Morena viva', 'Viva', 'Anguila criolla 15-30 cm. La mejor carnada para surubíes gigantes. Muy resistente, nada activamente.'),
+  ('c28', 'Renacuajo', 'Viva', 'Larva de rana. Irresistible para tarariras. Se engancha por la cola. Efectiva en primavera-verano.'),
 
-  -- Carnadas para pesca fina y mojarrero
-  ('c41', 'Lombriz cortada', 'Natural', 'Pedacito de lombriz para anzuelos pequeños.'),
-  ('c42', 'Bolita de pan', 'Natural', 'Miga de pan húmeda, clásica para mojarras.'),
-  ('c43', 'Larva de mosquito', 'Natural', 'Carnada viva diminuta para peces chicos.'),
-  ('c44', 'Gusano de humedad', 'Natural', 'Pequeños gusanos de la tierra húmeda.'),
-  ('c45', 'Bloodworm artificial', 'ArtificialBlando', 'Imitación de larva de mosquito en silicona.'),
-  ('c46', 'Micro jig', 'ArtificialDuro', 'Señuelo diminuto con anzuelo pequeño.'),
-  ('c47', 'Mosca mojada chica', 'MoscaArtificial', 'Imitación pequeña sumergida.'),
-  ('c48', 'Hormiga', 'Natural', 'Insecto natural que cae al agua.'),
-  ('c49', 'Cascarita', 'Natural', 'Pedacito de cáscara de huevo para chanchitas.'),
-  ('c50', 'Mini cucharita', 'ArtificialDuro', 'Cucharilla diminuta para dientudos.'),
+  -- CARNADAS MUERTAS (2)
+  ('c29', 'Filet de mojarra', 'CarnadaMuerta', 'Trozo de pez cortado. Tradicional para pejerrey bonaerense. También truchas. Cortes de 2-3 cm.'),
+  ('c30', 'Camarón', 'CarnadaMuerta', 'Camarón fresco o salado. Carnada costera para corvinas. También dorados en río. Pelado o entero.');
 
-  -- Carnadas tradicionales argentinas adicionales
-  ('c51', 'Isoca', 'Natural', 'Larva de mariposa nocturna, muy efectiva para truchas.'),
-  ('c52', 'Renacuajo', 'Viva', 'Larva de rana, irresistible para tarariras.'),
-  ('c53', 'Langostino de río', 'Natural', 'Crustáceo de agua dulce para grandes depredadores.'),
-  ('c54', 'Boilies caseros', 'Natural', 'Masa hervida con proteínas para carpfishing.'),
-  ('c55', 'Maíz fermentado', 'Natural', 'Maíz en proceso de fermentación, muy atractivo.'),
-  ('c56', 'Higo maduro', 'Natural', 'Fruta natural para pacúes, efectiva en otoño.'),
-  ('c57', 'Masa con anís', 'Natural', 'Masa aromatizada tradicionalmente argentina.'),
-  ('c58', 'Chicharrón de chancho', 'Natural', 'Grasa de cerdo para bagres grandes.'),
-  ('c59', 'Corazón de pollo', 'Natural', 'Víscera resistente para especies grandes.'),
-  ('c60', 'Saltamontes', 'Natural', 'Insecto terrestre para truchas en verano.'),
-  ('c61', 'Cangrejo de río', 'Natural', 'Crustáceo natural para dorados y surubíes.'),
-  ('c62', 'Almeja', 'Natural', 'Molusco para pesca costera de corvinas.'),
-  ('c63', 'Camarón salado', 'CarnadaMuerta', 'Camarón preservado para corvinas.'),
-  ('c64', 'Tuco', 'Viva', 'Gusano grande para bagres, muy resistente.'),
-  ('c65', 'Mojarra salada', 'CarnadaMuerta', 'Pez conservado en sal para grandes depredadores.'),
-  ('c66', 'Ninfa artificial', 'MoscaArtificial', 'Mosca hundimiento para truchas bajo superficie.'),
-  ('c67', 'Spinner Patagónico', 'ArtificialDuro', 'Cuchara giratoria específica para lagos fríos.'),
-  ('c68', 'Pluma de gallina', 'Natural', 'Pluma natural para fly fishing tradicional.'),
-  ('c69', 'Hormiga voladora', 'Natural', 'Insecto estacional muy efectivo en primavera.'),
-  ('c70', 'Grillo de campo', 'Natural', 'Insecto terrestre para pesca en arroyos.'),
-  ('c71', 'Hueva de pejerrey', 'Natural', 'Huevos naturales para especies nativas.'),
-  ('c72', 'Caracol de agua', 'Natural', 'Molusco natural para peces herbívoros.'),
-  ('c73', 'Streamer artesanal', 'MoscaArtificial', 'Mosca imitación pez para truchas grandes.'),
-  ('c74', 'Pancora', 'Viva', 'Cangrejo de río patagónico, muy efectivo.'),
-  ('c75', 'Libélula', 'Natural', 'Insecto acuático adulto para pesca superficial.'),
-  ('c76', 'Masa con miel', 'Natural', 'Masa dulce tradicional para carpas y bogas.'),
-  ('c77', 'Bicho candado', 'Natural', 'Larva acuática común en remansos.'),
-  ('c78', 'Mosca ahogada', 'MoscaArtificial', 'Mosca húmeda tradicional patagónica.');
+-- ============================================================
+-- DATOS DE EJEMPLO - RELACIONES ESPECIE-TIPO DE PESCA
+-- ============================================================
 
 INSERT INTO "EspecieTipoPesca" ("id", "idEspecie", "idTipoPesca", "descripcion") VALUES
-('etp1', 'es2', 'tp1', 'Spinning: Señuelos tipo minnows y poppers en corrientes rápidas y pozones profundos. Caña 2 m, acción media, reel frontal con buen freno. Horario: amanecer y atardecer, cuando hay actividad en superficie.'),
-('etp2', 'es2', 'tp2', 'Bait Casting: Lanzar señuelos de media agua en correderas con amplio caudal. Caña 1,8-2,1 m rígida, reel baitcasting potente. Ideal con poppers, stickbaits y crankbaits. Horario: amanecer y atardecer.'),
-('etp3', 'es2', 'tp6', 'Trolling: Desde embarcación en movimiento, con cucharas y señuelos de gran tamaño. Cañas robustas y reels rotativos con línea de 0,35 mm. Mejor en sectores con pozones y saltos de agua.'),
-('etp4', 'es2', 'tp3', 'Pesca de Fondo: Usando carnada viva (mojarra, sabalito) en sectores profundos y lentos del río. Caña de fondo 2,7 m y reel resistente. Horario: todo el día, mejor en bajantes de agua.');
+-- DORADO (Salminus brasiliensis) - es2
+('etp1', 'es2', 'tp1', 'Spinning: Señuelos tipo minnows y poppers en corrientes rápidas y pozones profundos. Caña 2 m, acción media. Horario: amanecer y atardecer.'),
+('etp2', 'es2', 'tp2', 'Bait Casting: Señuelos de media agua en correderas. Caña 1,8-2,1 m rígida. Ideal con poppers, stickbaits y crankbaits.'),
+('etp3', 'es2', 'tp6', 'Trolling: Desde embarcación con cucharas grandes. Cañas robustas, línea 0,35 mm. Mejor en pozones y saltos.'),
+('etp4', 'es2', 'tp3', 'Pesca de Fondo: Carnada viva (mojarra, sabalito) en pozones profundos. Caña 2,7 m. Mejor en bajantes.'),
+('etp5', 'es2', 'tp13', 'Pesca al Correntino: Dejando derivar carnada en corriente natural. Efectiva en barrancas y correderas.'),
 
--- TARARIRA COMÚN (Hoplias malabaricus)
-INSERT INTO "EspecieTipoPesca" ("id", "idEspecie", "idTipoPesca", "descripcion") VALUES
-('etp5', 'es1', 'tp1', 'Spinning: Señuelos de superficie y medias aguas como ranas, paseantes y crankbaits. Caña 1,8-2,2 m, reel frontal. Ubicación: lagunas con vegetación densa, canales y arroyos. Horario: amanecer y atardecer.'),
-('etp6', 'es1', 'tp3', 'Pesca de Fondo: Carnada viva o muerta (lombriz, pez pequeño). Línea con plomada descansando en fondo. Caña de 2,7 m y reel resistente. Efectiva en aguas profundas cerca de troncos y raíces.'),
-('etp7', 'es1', 'tp2', 'Bait Casting: Señuelos grandes tipo stickbait o frog. Lanzamientos cortos y precisos a la vegetación. Horario: primeras horas de la mañana y últimas de la tarde.'),
-('etp8', 'es1', 'tp5', 'Mosca: Imitaciones de insectos grandes o pequeños peces. Ideal para aguas calmadas con mucha cobertura. Caña 2,1 m, línea flotante o intermedia.');
+-- TARARIRA COMÚN (Hoplias malabaricus) - es1
+('etp6', 'es1', 'tp1', 'Spinning: Ranas, paseantes y crankbaits. Caña 1,8-2,2 m. Lagunas con vegetación densa. Amanecer y atardecer.'),
+('etp7', 'es1', 'tp2', 'Bait Casting: Señuelos grandes tipo stickbait o frog. Lanzamientos precisos a vegetación.'),
+('etp8', 'es1', 'tp3', 'Pesca de Fondo: Carnada viva o muerta. Caña 2,7 m. Efectiva cerca de troncos y raíces.'),
+('etp9', 'es1', 'tp12', 'Pesca a la Cueva: Lanzamientos bajo estructuras. Caña corta 1,5-1,8 m, precisión milimétrica.'),
 
--- PEJERREY BONAERENSE (Odontesthes bonariensis)
-INSERT INTO "EspecieTipoPesca" ("id", "idEspecie", "idTipoPesca", "descripcion") VALUES
-('etp9', 'es13', 'tp4', 'Pesca de Flote: Línea fina con boya pequeña. Carnada: mojarra viva o filet. Caña liviana 2-3 m, reel pequeño. Horario: mañanas soleadas y tardes nubladas.'),
-('etp10', 'es13', 'tp5', 'Mosca: Pequeñas imitaciones de larvas o ninfas. Caña 2,1 m, línea liviana. Agua calma de lagunas o arroyos. Horario: todo el día con picos a media mañana.'),
-('etp11', 'es13', 'tp3', 'Pesca de Fondo: Masa o filet pequeño con línea fina al fondo. Efectivo en madrugadas o anochecer. Cañas cortas y flexibles, reel liviano.');
+-- PEJERREY BONAERENSE (Odontesthes bonariensis) - es13
+('etp10', 'es13', 'tp4', 'Pesca de Flote: Línea fina con boya pequeña. Carnada: mojarra viva o filet. Mañanas soleadas y tardes nubladas.'),
+('etp11', 'es13', 'tp5', 'Mosca: Imitaciones de larvas o ninfas. Caña 2,1 m, línea liviana. Todo el día con picos a media mañana.'),
+('etp12', 'es13', 'tp3', 'Pesca de Fondo: Masa o filet pequeño al fondo. Madrugadas o anochecer. Cañas flexibles.'),
+('etp13', 'es13', 'tp17', 'Pesca con Boya Corrediza: Boya deslizante regulando profundidad. Versátil en corrientes.'),
 
--- SURUBÍ PINTADO (Pseudoplatystoma corruscans)
-INSERT INTO "EspecieTipoPesca" ("id", "idEspecie", "idTipoPesca", "descripcion") VALUES
-('etp12', 'es3', 'tp3', 'Pesca de Fondo: Carnadas vivas como anguilas, bogas o trozos de pescado. Cañas largas 3 m y reels rotativos resistentes. Ubicación: pozones profundos y corrientes fuertes. Horario: nocturno, especialmente después del atardecer.'),
-('etp13', 'es3', 'tp2', 'Bait Casting: Señuelos grandes tipo jerkbait o popper pesado. Se lanzan cerca de troncos y rocas sumergidas. Horario: atardecer y primeras horas de la noche.'),
-('etp14', 'es3', 'tp1', 'Spinning: Grandes minnows o stickbaits en corrientes profundas. Ideal para pescar durante el día en pozones y remansos. Caña 2,4 m, reel frontal robusto.'),
-('etp15', 'es3', 'tp6', 'Trolling: Señuelos pesados arrastrados desde embarcación en ríos grandes. Línea 0,40 mm, reel rotativo grande. Horario: mañana y tarde, aguas profundas y lentas.'),
-
--- CARPA COMÚN (Cyprinus carpio)
-('etp16', 'es24', 'tp3', 'Pesca de Fondo: Masa con esencias, maíz hervido, papa. Cañas largas 3-4 m, reel frontal grande. Ubicación: lagunas cálidas. Horario: todo el día, mejor en verano.'),
-('etp17', 'es24', 'tp14', 'Pesca con Cebado: Arrojar maíz molido para atraer cardúmenes. Masa dulce como carnada. Técnica de paciencia en aguas tranquilas.'),
-
--- BAGRE SAPO (Rhamdia quelen)
-('etp18', 'es21', 'tp3', 'Pesca de Fondo: Carnadas fuertes como tripas, hígado o lombrices. Nocturno en pozones rocosos. Cañas resistentes y plomos pesados.'),
-
--- ARMADO (Pterodoras granulosus)
-('etp19', 'es22', 'tp3', 'Pesca de Fondo: Carnadas grandes y resistentes. Equipos muy robustos por su fuerza. Pesca nocturna en corrientes fuertes.'),
-
--- CORVINA RUBIA (Micropogonias furnieri)
-('etp20', 'es30', 'tp7', 'Surfcasting: Desde playa con carnadas naturales como camarón y cangrejo. Cañas largas 4 m, lanzamientos lejanos. Mejor con marea entrante.'),
-
--- PACÚ (Piaractus mesopotamicus)
-('etp21', 'es6', 'tp3', 'Pesca de Fondo: Con frutas como mburucuyá, higo, o masa. Caña media 2,5 m en remansos y lagunas. Horario: mañana y tarde.'),
-('etp22', 'es6', 'tp1', 'Spinning: Señuelos pequeños que imitan frutas o crankbaits. En aguas tranquilas cerca de árboles frutales.'),
-
--- BOGA (Megaleporinus obtusidens)  
-('etp23', 'es9', 'tp3', 'Pesca de Fondo: Maíz, masa, lombrices en corrientes medianas. Caña 2,7 m, reel resistente. Muy combativa.'),
-('etp24', 'es9', 'tp4', 'Pesca de Flote: Con boya en corrientes suaves. Carnada: maíz o masa. Horario: todo el día.'),
-
--- SÁBALO (Prochilodus lineatus)
-('etp25', 'es10', 'tp3', 'Pesca de Fondo: Masa vegetal, harinas. Caña larga en ríos grandes. Se usa principalmente como carnada.'),
-
--- TARARIRA AZUL (Hoplias lacerdae)
-('etp26', 'es11', 'tp2', 'Bait Casting: Señuelos grandes, poppers potentes. Lanzamientos precisos a estructuras. Muy agresiva.'),
-('etp27', 'es11', 'tp1', 'Spinning: Paseantes y stickbaits grandes. Caña robusta 2,2 m. Horario: amanecer y atardecer.'),
-
--- TARARIRA PINTADA (Hoplias australis)
-('etp28', 'es12', 'tp1', 'Spinning: Señuelos de superficie medianos. En lagunas con vegetación. Similar a tararira común.'),
-
--- PEJERREY PATAGÓNICO (Odontesthes hatcheri)
-('etp29', 'es14', 'tp5', 'Mosca: En lagos fríos con ninfas pequeñas. Caña liviana, línea flotante. Horario: mañanas claras.'),
-('etp30', 'es14', 'tp4', 'Pesca de Flote: Con carnada pequeña en aguas frías. Equipos livianos y líneas finas.'),
-
--- PERCA CRIOLLA (Percichthys trucha)
-('etp31', 'es16', 'tp1', 'Spinning: Cucharitas pequeñas en lagos patagónicos. Caña liviana, señuelos brillantes.'),
-('etp32', 'es16', 'tp5', 'Mosca: Streamers y ninfas en aguas frías. Técnica similar a truchas.'),
-
--- TRUCHA ARCOÍRIS (Oncorhynchus mykiss)
-('etp33', 'es17', 'tp5', 'Mosca: Moscas secas, ninfas, streamers. Caña 2,4 m en ríos serranos. Horario: amanecer y atardecer.'),
-('etp34', 'es17', 'tp1', 'Spinning: Cucharitas giratorias en corrientes rápidas. Caña liviana 2 m, señuelos brillantes.'),
-
--- TRUCHA MARRÓN (Salmo trutta)
-('etp35', 'es18', 'tp5', 'Mosca: Técnica refinada, moscas secas grandes. Pesca selectiva en pozones profundos.'),
-('etp36', 'es18', 'tp1', 'Spinning: Señuelos pequeños tipo minnow. Horario: atardecer y noche.'),
-
--- TRUCHA DE ARROYO (Salvelinus fontinalis)
-('etp37', 'es19', 'tp5', 'Mosca: Moscas secas pequeñas en arroyos serranos. Equipos ultra livianos.'),
-
--- ESPECIES PEQUEÑAS - MOJARRERO Y PESCA FINA
--- CHANCHITA (Crenicichla lacustris)
-('etp38', 'es31', 'tp16', 'Mojarrero: Caña telescópica 3,5 m, reel pequeño, línea fina 0,16 mm. Lombriz cortada en pozones de arroyos. Horario: todo el día.'),
-('etp39', 'es31', 'tp17', 'Pesca a la Cueva: Lanzamientos cortos bajo troncos y raíces. Caña corta rígida, carnada cerca del fondo.'),
-
--- DIENTUDO (Oligosarcus jenynsii)  
-('etp40', 'es32', 'tp16', 'Mojarrero: Equipos ultra livianos, anzuelos pequeños. Lombriz cortada en corrientes rápidas. Muy combativo para su tamaño.'),
-('etp41', 'es32', 'tp1', 'Spinning Ultra Liviano: Mini cucharitas y micro jigs. Caña 1,8 m acción ultra rápida, reel 1000.'),
-
--- MOJARRA (Astyanax fasciatus)
-('etp42', 'es25', 'tp16', 'Mojarrero: Técnica clásica con bolitas de pan, lombriz cortada. Caña telescópica, anzuelos pequeños N° 12-14.'),
-('etp43', 'es25', 'tp4', 'Pesca de Flote Liviano: Boya pequeña, línea fina. Pan, lombriz cortada. Ideal para principiantes.'),
-
--- MADRECITA Y PANZUDITO (especies diminutas)
-('etp44', 'es33', 'tp16', 'Mojarrero Ultra Fino: Anzuelos N° 16-18, línea 0,12 mm. Larvas de mosquito, miga de pan microscópica.'),
-('etp45', 'es34', 'tp16', 'Mojarrero Ultra Fino: Similar a madrecita, equipos finísimos. Paciencia y precisión extrema.'),
-
--- CHANCHITA RAYADA (Cichlasoma dimerus)
-('etp46', 'es35', 'tp16', 'Mojarrero: Lombriz, cascarita de huevo. Territorial, buscar en nidos cerca de vegetación.'),
-('etp47', 'es35', 'tp17', 'Pesca a la Cueva: En estructuras rocosas y troncos. Muy agresiva en época reproductiva.'),
-
--- BAGRE NEGRO (Heptapterus mustelinus)
-('etp48', 'es36', 'tp3', 'Pesca de Fondo Liviano: Lombriz al fondo en arroyos pedregosos. Nocturno, caña media 2,5 m.'),
-
--- CASTAÑETA (Australoheros facetus)
-('etp49', 'es37', 'tp16', 'Mojarrero: Lombriz, masa pequeña. Lagunas pampeanas, muy resistente al frío.'),
-
--- MOJARRA COLA ROJA (Cheirodon interruptus)
-('etp50', 'es38', 'tp16', 'Mojarrero: Cardúmenes en aguas claras. Anzuelos diminutos, lombriz cortadita.'),
-
--- TÉCNICAS FALTANTES PARA COMPLETAR TODAS LAS ESPECIES
+-- SURUBÍ PINTADO (Pseudoplatystoma corruscans) - es3
+('etp14', 'es3', 'tp3', 'Pesca de Fondo: Carnadas vivas grandes. Cañas largas 3 m, pozones profundos. Nocturno.'),
+('etp15', 'es3', 'tp16', 'Pesca Nocturna de Bagres: Equipos robustos, carnadas vivas 20-40 cm, líneas 0,45-0,60 mm. Solo de noche.'),
+('etp16', 'es3', 'tp9', 'Embarcado Fondeado: Múltiples cañas desde bote anclado. Principalmente nocturna en pozones.'),
+('etp17', 'es3', 'tp6', 'Trolling: Señuelos pesados desde embarcación. Línea 0,40 mm. Mañana y tarde en aguas profundas.'),
 
 -- SURUBÍ ATIGRADO (Pseudoplatystoma reticulatum) - es4
-('etp51', 'es4', 'tp3', 'Pesca de Fondo: Similar al pintado, carnadas vivas grandes. Nocturno en pozones profundos.'),
-('etp52', 'es4', 'tp20', 'Pesca Nocturna Especializada: Equipos robustos, carnadas grandes. Pozones rocosos.'),
+('etp18', 'es4', 'tp3', 'Pesca de Fondo: Similar al pintado, carnadas vivas grandes. Nocturno en pozones profundos.'),
+('etp19', 'es4', 'tp16', 'Pesca Nocturna de Bagres: Equipos robustos especializado para grandes bagres. Pozones rocosos.'),
+('etp20', 'es4', 'tp9', 'Embarcado Fondeado: Desde bote anclado con múltiples carnadas. Técnica nocturna.'),
 
 -- MANGURUYÚ (Zungaro zungaro) - es5
-('etp53', 'es5', 'tp3', 'Pesca de Fondo: Carnadas muy grandes, equipos de alta resistencia. Solo en ríos grandes.'),
-('etp54', 'es5', 'tp20', 'Pesca Nocturna Especializada: Técnica para bagres gigantes. Cañas pesadas, líneas gruesas.'),
+('etp21', 'es5', 'tp3', 'Pesca de Fondo: Carnadas muy grandes, equipos de alta resistencia. Solo ríos grandes.'),
+('etp22', 'es5', 'tp16', 'Pesca Nocturna de Bagres: Técnica para bagres gigantes. Cañas pesadas 3-3,5 m, líneas gruesas.'),
+('etp23', 'es5', 'tp9', 'Embarcado Fondeado: Pozones profundos 15-30 m. Múltiples cañas robustas.'),
+
+-- PACÚ (Piaractus mesopotamicus) - es6
+('etp24', 'es6', 'tp3', 'Pesca de Fondo: Frutas (mburucuyá, higo) o masa. Caña 2,5 m en remansos. Mañana y tarde.'),
+('etp25', 'es6', 'tp1', 'Spinning: Señuelos pequeños imitando frutas. Aguas tranquilas cerca de árboles frutales.'),
+('etp26', 'es6', 'tp7', 'Variada: Múltiples anzuelos con carnadas diversas. Efectiva para pacúes en río.'),
 
 -- PACÚ RELOJ (Myloplus rubripinnis) - es7
-('etp55', 'es7', 'tp3', 'Pesca de Fondo: Frutas y masa en remansos. Equipos medianos, horario de mediodía.'),
+('etp27', 'es7', 'tp3', 'Pesca de Fondo: Frutas y masa en remansos. Equipos medianos, horario de mediodía.'),
+('etp28', 'es7', 'tp7', 'Variada: Técnica de múltiples anzuelos efectiva para pacúes chicos.'),
 
 -- PACÚ CHATO (Colossoma mitrei) - es8
-('etp56', 'es8', 'tp3', 'Pesca de Fondo: Frutas, maíz y masa en lagunas conectadas a ríos.'),
+('etp29', 'es8', 'tp3', 'Pesca de Fondo: Frutas, maíz y masa en lagunas conectadas a ríos.'),
+('etp30', 'es8', 'tp7', 'Variada: Múltiples carnadas para captura mixta con otras especies.'),
+
+-- BOGA (Megaleporinus obtusidens) - es9
+('etp31', 'es9', 'tp3', 'Pesca de Fondo: Maíz, masa, lombrices en corrientes medianas. Caña 2,7 m. Muy combativa.'),
+('etp32', 'es9', 'tp4', 'Pesca de Flote: Boya en corrientes suaves. Carnada: maíz o masa. Todo el día.'),
+('etp33', 'es9', 'tp7', 'Variada: Técnica ideal para bogas. Múltiples anzuelos con maíz y masa.'),
+('etp34', 'es9', 'tp17', 'Pesca con Boya Corrediza: Muy efectiva regulando profundidad según corriente.'),
 
 -- SÁBALO (Prochilodus lineatus) - es10
-('etp57', 'es10', 'tp3', 'Pesca de Fondo: Masa vegetal, principalmente usado como carnada para grandes depredadores.'),
+('etp35', 'es10', 'tp3', 'Pesca de Fondo: Masa vegetal, harinas. Principalmente usado como carnada para predadores.'),
+('etp36', 'es10', 'tp7', 'Variada: Múltiples anzuelos con masa vegetal. Abundantes en ríos grandes.'),
+
+-- TARARIRA AZUL (Hoplias lacerdae) - es11
+('etp37', 'es11', 'tp2', 'Bait Casting: Señuelos grandes, poppers potentes. Muy agresiva. Lanzamientos precisos.'),
+('etp38', 'es11', 'tp1', 'Spinning: Paseantes y stickbaits grandes. Caña robusta 2,2 m. Amanecer y atardecer.'),
+('etp39', 'es11', 'tp12', 'Pesca a la Cueva: Especialmente efectiva para tarariras azules bajo estructuras.'),
 
 -- TARARIRA PINTADA (Hoplias australis) - es12
-('etp58', 'es12', 'tp1', 'Spinning: Señuelos de superficie en lagunas con vegetación. Similar a tararira común.'),
-('etp59', 'es12', 'tp17', 'Pesca a la Cueva: Bajo vegetación flotante, lanzamientos precisos.'),
+('etp40', 'es12', 'tp1', 'Spinning: Señuelos de superficie medianos. Lagunas con vegetación.'),
+('etp41', 'es12', 'tp12', 'Pesca a la Cueva: Bajo vegetación flotante. Lanzamientos precisos.'),
+('etp42', 'es12', 'tp3', 'Pesca de Fondo: Carnada viva en lagunas pampeanas.'),
 
 -- PEJERREY PATAGÓNICO (Odontesthes hatcheri) - es14
-('etp60', 'es14', 'tp5', 'Mosca: Lagos fríos con ninfas pequeñas. Mañanas despejadas.'),
-('etp61', 'es14', 'tp4', 'Pesca de Flote: Carnada pequeña en aguas frías, equipos livianos.'),
+('etp43', 'es14', 'tp5', 'Mosca: Lagos fríos con ninfas pequeñas. Línea flotante. Mañanas despejadas.'),
+('etp44', 'es14', 'tp4', 'Pesca de Flote: Carnada pequeña en aguas frías. Equipos livianos y líneas finas.'),
+('etp45', 'es14', 'tp11', 'Spinning Patagónico: Cucharitas rotativas en lagos patagónicos desde costa.'),
 
 -- PEJERREY FUEGUINO (Odontesthes nigricans) - es15
-('etp62', 'es15', 'tp5', 'Mosca: Aguas extremadamente frías, moscas diminutas.'),
-('etp63', 'es15', 'tp4', 'Pesca de Flote: Equipos ultra livianos en lagos fueguinos.'),
+('etp46', 'es15', 'tp5', 'Mosca: Aguas extremadamente frías. Moscas diminutas. Técnica muy delicada.'),
+('etp47', 'es15', 'tp4', 'Pesca de Flote: Equipos ultra livianos en lagos fueguinos. Líneas finísimas.'),
+
+-- PERCA CRIOLLA (Percichthys trucha) - es16
+('etp48', 'es16', 'tp1', 'Spinning: Cucharitas pequeñas en lagos patagónicos. Señuelos brillantes.'),
+('etp49', 'es16', 'tp5', 'Mosca: Streamers y ninfas en aguas frías. Técnica similar a truchas.'),
+('etp50', 'es16', 'tp11', 'Spinning Patagónico: Técnica específica para percas en lagos profundos.'),
+
+-- TRUCHA ARCOÍRIS (Oncorhynchus mykiss) - es17
+('etp51', 'es17', 'tp5', 'Mosca: Moscas secas, ninfas, streamers. Caña 2,4 m en ríos serranos. Amanecer y atardecer.'),
+('etp52', 'es17', 'tp1', 'Spinning: Cucharitas giratorias en corrientes rápidas. Caña liviana 2 m.'),
+('etp53', 'es17', 'tp11', 'Spinning Patagónico: Cucharitas y spoons en lagos fríos. Línea trenzada fina.'),
+('etp54', 'es17', 'tp6', 'Trolling: Pesca al curricán en lagos patagónicos para truchas grandes.'),
+
+-- TRUCHA MARRÓN (Salmo trutta) - es18
+('etp55', 'es18', 'tp5', 'Mosca: Técnica refinada, moscas secas grandes. Pesca selectiva en pozones profundos.'),
+('etp56', 'es18', 'tp1', 'Spinning: Señuelos pequeños tipo minnow. Horario: atardecer y noche.'),
+('etp57', 'es18', 'tp11', 'Spinning Patagónico: Muy efectiva para marrones grandes en lagos.'),
+
+-- TRUCHA DE ARROYO (Salvelinus fontinalis) - es19
+('etp58', 'es19', 'tp5', 'Mosca: Moscas secas pequeñas en arroyos serranos. Equipos ultra livianos.'),
+('etp59', 'es19', 'tp1', 'Spinning: Señuelos diminutos en arroyos de montaña.'),
+
+-- BAGRE BLANCO (Pimelodus albicans) - es20
+('etp60', 'es20', 'tp3', 'Pesca de Fondo: Lombrices, tripas, masa. Nocturno desde costa. Plomos pesados.'),
+('etp61', 'es20', 'tp7', 'Variada: Múltiples anzuelos con carnadas variadas. Muy efectiva para bagres.'),
+
+-- BAGRE SAPO (Rhamdia quelen) - es21
+('etp62', 'es21', 'tp3', 'Pesca de Fondo: Carnadas fuertes como tripas, hígado. Nocturno en pozones rocosos.'),
+('etp63', 'es21', 'tp16', 'Pesca Nocturna de Bagres: Equipos robustos para ejemplares grandes.'),
+
+-- ARMADO (Pterodoras granulosus) - es22
+('etp64', 'es22', 'tp3', 'Pesca de Fondo: Carnadas grandes y resistentes. Equipos muy robustos. Nocturna en corrientes.'),
+('etp65', 'es22', 'tp16', 'Pesca Nocturna de Bagres: Especializada para armados grandes. Muy combativos.'),
 
 -- PATÍ (Luciopimelodus pati) - es23
-('etp64', 'es23', 'tp3', 'Pesca de Fondo: Carnadas vivas grandes, pozones profundos. Nocturno.'),
-('etp65', 'es23', 'tp20', 'Pesca Nocturna Especializada: Bagre de gran tamaño, equipos robustos.'),
+('etp66', 'es23', 'tp3', 'Pesca de Fondo: Carnadas vivas grandes. Pozones profundos. Nocturno.'),
+('etp67', 'es23', 'tp16', 'Pesca Nocturna de Bagres: Bagre de gran tamaño. Equipos robustos. Líneas gruesas.'),
+('etp68', 'es23', 'tp9', 'Embarcado Fondeado: Desde bote en pozones profundos. Carnadas vivas.'),
+
+-- CARPA COMÚN (Cyprinus carpio) - es24
+('etp69', 'es24', 'tp3', 'Pesca de Fondo: Masa, maíz hervido, papa. Cañas largas 3-4 m. Lagunas cálidas.'),
+('etp70', 'es24', 'tp10', 'Carpfishing: Técnica especializada. Cebado previo, múltiples líneas, boilies. Pesca 24-48 hs.'),
+('etp71', 'es24', 'tp17', 'Pesca con Boya Corrediza: Muy efectiva para carpas regulando profundidad.'),
+
+-- MOJARRA (Astyanax fasciatus) - es25
+('etp72', 'es25', 'tp8', 'Mojarrero: Técnica clásica con bolitas de pan, lombriz cortada. Anzuelos N°12-14.'),
+('etp73', 'es25', 'tp4', 'Pesca de Flote: Boya pequeña, línea fina. Ideal para principiantes.'),
+('etp74', 'es25', 'tp7', 'Variada: Efectiva para capturar múltiples mojarras simultáneamente.'),
+
+-- ANGUILA CRIOLLA (Synbranchus marmoratus) - es26
+('etp75', 'es26', 'tp3', 'Pesca de Fondo: Lombriz en fondos barrosos. Nocturna. Muy resistente.'),
 
 -- PIRAPITÁ (Brycon orbignyanus) - es27
-('etp66', 'es27', 'tp1', 'Spinning: Señuelos pequeños tipo dorado. Corrientes rápidas.'),
-('etp67', 'es27', 'tp2', 'Bait Casting: Poppers chicos en correntadas. Muy combativo.'),
+('etp76', 'es27', 'tp1', 'Spinning: Señuelos pequeños tipo dorado. Corrientes rápidas. Muy combativo.'),
+('etp77', 'es27', 'tp2', 'Bait Casting: Poppers chicos en correntadas. Similar al dorado.'),
 
 -- BOGA LISA (Leporinus friderici) - es28
-('etp68', 'es28', 'tp3', 'Pesca de Fondo: Maíz, frutas. Corrientes medianas, equipos livianos.'),
-('etp69', 'es28', 'tp4', 'Pesca de Flote: Boya en corrientes suaves, carnada vegetal.'),
+('etp78', 'es28', 'tp3', 'Pesca de Fondo: Maíz, frutas. Corrientes medianas. Equipos livianos.'),
+('etp79', 'es28', 'tp4', 'Pesca de Flote: Boya en corrientes suaves. Carnada vegetal.'),
 
 -- PALOMETA (Crenicichla britskii) - es29
-('etp70', 'es29', 'tp1', 'Spinning: Señuelos pequeños en arroyos y lagunas. Agresiva.'),
-('etp71', 'es29', 'tp17', 'Pesca a la Cueva: Bajo estructuras, lanzamientos precisos.'),
+('etp80', 'es29', 'tp1', 'Spinning: Señuelos pequeños en arroyos y lagunas. Agresiva.'),
+('etp81', 'es29', 'tp12', 'Pesca a la Cueva: Bajo estructuras. Lanzamientos precisos.'),
+
+-- CORVINA RUBIA (Micropogonias furnieri) - es30
+('etp82', 'es30', 'tp14', 'Surfcasting: Desde playa con camarón y cangrejo. Cañas largas 4 m. Marea entrante.'),
+('etp83', 'es30', 'tp3', 'Pesca de Fondo: Desde costa con carnadas naturales.'),
+
+-- CHANCHITA (Crenicichla lacustris) - es31
+('etp84', 'es31', 'tp8', 'Mojarrero: Caña 3,5 m, línea fina 0,16 mm. Lombriz cortada en arroyos.'),
+('etp85', 'es31', 'tp12', 'Pesca a la Cueva: Lanzamientos bajo troncos y raíces. Territorial.'),
+
+-- DIENTUDO (Oligosarcus jenynsii) - es32
+('etp86', 'es32', 'tp8', 'Mojarrero: Equipos ultra livianos. Lombriz cortada. Muy combativo para su tamaño.'),
+('etp87', 'es32', 'tp1', 'Spinning Ultra Liviano: Mini cucharitas y micro jigs. Reel 1000.'),
+
+-- MADRECITA (Jenynsia multidentata) - es33
+('etp88', 'es33', 'tp8', 'Mojarrero Ultra Fino: Anzuelos N°16-18. Larvas de mosquito. Extremadamente delicado.'),
+
+-- PANZUDITO (Cnesterodon decemmaculatus) - es34
+('etp89', 'es34', 'tp8', 'Mojarrero Ultra Fino: Similar a madrecita. Equipos finísimos. Paciencia extrema.'),
+
+-- CHANCHITA RAYADA (Cichlasoma dimerus) - es35
+('etp90', 'es35', 'tp8', 'Mojarrero: Lombriz, cascarita. Territorial cerca de vegetación.'),
+('etp91', 'es35', 'tp12', 'Pesca a la Cueva: Estructuras rocosas. Agresiva en reproducción.'),
+
+-- BAGRE NEGRO (Heptapterus mustelinus) - es36
+('etp92', 'es36', 'tp3', 'Pesca de Fondo: Lombriz al fondo en arroyos pedregosos. Nocturno.'),
+
+-- CASTAÑETA (Australoheros facetus) - es37
+('etp93', 'es37', 'tp8', 'Mojarrero: Lombriz, masa pequeña. Lagunas pampeanas. Resistente al frío.'),
+
+-- MOJARRA COLA ROJA (Cheirodon interruptus) - es38
+('etp94', 'es38', 'tp8', 'Mojarrero: Cardúmenes en aguas claras. Anzuelos diminutos. Lombriz cortada.'),
 
 -- PUYÉN GRANDE (Galaxias maculatus) - es39
-('etp72', 'es39', 'tp28', 'Pesca en Espejos: Carnadas pequeñas en lagunas patagónicas. Anzuelos diminutos.'),
-('etp73', 'es39', 'tp27', 'Fly Fishing Ninfeo: Ninfas microscópicas en aguas frías.'),
+('etp95', 'es39', 'tp5', 'Mosca: Ninfas microscópicas en aguas frías. Técnica ultra delicada.'),
+('etp96', 'es39', 'tp4', 'Pesca de Flote: Carnadas diminutas en lagunas patagónicas. Anzuelos pequeñísimos.'),
 
 -- PERCA PATAGÓNICA (Percichthys colhuapiensis) - es40
-('etp74', 'es40', 'tp25', 'Spinning Patagónico: Cucharitas rotativas en lagos profundos.'),
-('etp75', 'es40', 'tp26', 'Trolling Lacustre: Pesca al curricán en grandes lagos.'),
+('etp97', 'es40', 'tp11', 'Spinning Patagónico: Cucharitas rotativas en lagos profundos. Desde costa.'),
+('etp98', 'es40', 'tp15', 'Jigging Vertical: Jigs metálicos verticales. Muy efectiva en lagos profundos.'),
+('etp99', 'es40', 'tp6', 'Trolling: Al curricán en grandes lagos patagónicos para percas grandes.'),
 
 -- BAGRE BLANCO DEL SUR (Diplomystes viedmensis) - es41
-('etp76', 'es41', 'tp3', 'Pesca de Fondo: Carnadas naturales en pozones patagónicos. Especie protegida.'),
-('etp77', 'es41', 'tp28', 'Pesca en Espejos: Solo captura y liberación, conservación extrema.');
+('etp100', 'es41', 'tp3', 'Pesca de Fondo: Carnadas naturales en pozones patagónicos. Especie protegida - captura y devolución.');
 
 INSERT INTO "Spot" (
   "id", "idUsuario", "idUsuarioActualizo", "nombre", "estado", "descripcion", "ubicacion", "fechaPublicacion", "fechaActualizacion", "imagenPortada", "isDeleted"
@@ -822,7 +823,7 @@ INSERT INTO "Spot" (
   'usuario1',
   'usuario2',
   'Desembocadura del arrollito',
-  'Esperando',
+  'Aceptado',
   'Un lugar excelente para pescar tarariras con señuelos, pero solo para entendidos.',
   ST_SetSRID(ST_GeomFromGeoJSON('{
     "type": "Point",
@@ -880,6 +881,159 @@ INSERT INTO "Spot" (
   CURRENT_DATE,
   'uploads/dorado.png',
   FALSE
+),
+-- ============================================================
+-- SPOTS RÍO SALADO - CARLOS
+-- ============================================================
+(
+  'SpotPuenteGaviotas',
+  'usuario1',
+  'usuario1',
+  'Puente Gaviotas - Río Salado',
+  'Aceptado',
+  'Zona clásica del Río Salado. Excelente para pejerrey, tarariras y bagres. Estructura del puente atrae peces.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-58.21856962523311, -35.76542656433006]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/pejerrey.png',
+  FALSE
+),
+(
+  'SpotCanalAliviador',
+  'usuario1',
+  'usuario1',
+  'Canal Aliviador - Río Salado',
+  'Aceptado',
+  'Canal con corriente moderada. Ideal para carpas grandes, pejerreyes y bogas. Aguas más profundas.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-58.09736829811158, -35.750086754706095]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/carpa.png',
+  FALSE
+),
+(
+  'SpotPuente41',
+  'usuario1',
+  'usuario1',
+  'Puente 41 - Río Salado',
+  'Aceptado',
+  'Spot emblemático para pejerrey argentino. Aguas claras y corriente suave. Mejor con flote.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-57.98199742419953, -35.73658874176168]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/pejerrey.png',
+  FALSE
+),
+-- ============================================================
+-- SPOTS RÍO PARANÁ - LUCÍA
+-- ============================================================
+(
+  'SpotItaIbate',
+  'usuario2',
+  'usuario2',
+  'Itá Ibaté - Río Paraná',
+  'Aceptado',
+  'Paraná entrerriano con grandes dorados y surubíes. Pozones profundos con excelente corriente.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-59.20694076805208, -31.348611068177423]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/dorado.png',
+  FALSE
+),
+(
+  'SpotGoya',
+  'usuario2',
+  'usuario2',
+  'Goya - Río Paraná',
+  'Aceptado',
+  'Zona correntina del Paraná. Dorados, bogas y tarariras. Costas con vegetación abundante.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-59.26544244843749, -29.139437530308674]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/dorado.png',
+  FALSE
+),
+(
+  'SpotPasoDeLaPatria',
+  'usuario2',
+  'usuario2',
+  'Paso de la Patria - Capital del Dorado',
+  'Aceptado',
+  'La meca de la pesca en Argentina. Dorados trofeo y surubíes gigantes. Torneo nacional anual.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-59.11302697011719, -27.311481568694984]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/dorado.png',
+  FALSE
+),
+-- ============================================================
+-- SPOTS PATAGONIA - LUCÍA
+-- ============================================================
+(
+  'SpotRioLimay',
+  'usuario2',
+  'usuario2',
+  'Río Limay - Patagonia',
+  'Aceptado',
+  'Río patagónico con truchas arcoíris y marrones. Aguas cristalinas de montaña. Fly fishing.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-71.34124481924113, -40.96826103651293]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/trucha.png',
+  FALSE
+),
+(
+  'SpotRioChimehuin',
+  'usuario2',
+  'usuario2',
+  'Río Chimehuín - Junín de los Andes',
+  'Aceptado',
+  'Río de truchas trofeo. Moscas secas y ninfas. Paisajes de bosque andino patagónico.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-71.0633587292683, -39.87997896458389]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/trucha.png',
+  FALSE
+),
+(
+  'SpotRioTraful',
+  'usuario2',
+  'usuario2',
+  'Río Traful - Villa Traful',
+  'Aceptado',
+  'Río y lago con truchas y percas criollas. Aguas profundas y frías. Pesca embarcada y desde costa.',
+  ST_SetSRID(ST_GeomFromGeoJSON('{
+    "type": "Point",
+    "coordinates": [-71.29338522436461, -40.66268370204022]
+  }'), 4326),
+  CURRENT_DATE,
+  CURRENT_DATE,
+  'uploads/trucha.png',
+  FALSE
 );
 
 INSERT INTO "SpotEspecie" ("id", "idSpot", "idEspecie") VALUES
@@ -927,7 +1081,47 @@ INSERT INTO "SpotEspecie" ("id", "idSpot", "idEspecie") VALUES
   ('se37', 'SpotGeneral', 'es35'),  -- Chanchita rayada
   ('se38', 'SpotGeneral', 'es36'),  -- Bagre negro
   ('se39', 'SpotGeneral', 'es37'),  -- Castañeta
-  ('se40', 'SpotGeneral', 'es38');  -- Mojarra cola roja 
+  ('se40', 'SpotGeneral', 'es38'),  -- Mojarra cola roja
+  
+  -- Puente Gaviotas - Río Salado
+  ('se41', 'SpotPuenteGaviotas', 'es13'), -- Pejerrey
+  ('se42', 'SpotPuenteGaviotas', 'es1'),  -- Tararira
+  ('se43', 'SpotPuenteGaviotas', 'es20'), -- Bagre blanco
+  
+  -- Canal Aliviador
+  ('se44', 'SpotCanalAliviador', 'es13'), -- Pejerrey
+  ('se45', 'SpotCanalAliviador', 'es24'), -- Carpa
+  ('se46', 'SpotCanalAliviador', 'es9'),  -- Boga
+  
+  -- Puente 41
+  ('se47', 'SpotPuente41', 'es13'),       -- Pejerrey
+  
+  -- Itá Ibaté - Paraná
+  ('se48', 'SpotItaIbate', 'es2'),        -- Dorado
+  ('se49', 'SpotItaIbate', 'es3'),        -- Surubí pintado
+  ('se50', 'SpotItaIbate', 'es6'),        -- Pacú
+  
+  -- Goya - Paraná
+  ('se51', 'SpotGoya', 'es2'),            -- Dorado
+  ('se52', 'SpotGoya', 'es9'),            -- Boga
+  ('se53', 'SpotGoya', 'es1'),            -- Tararira
+  
+  -- Paso de la Patria
+  ('se54', 'SpotPasoDeLaPatria', 'es2'),  -- Dorado
+  ('se55', 'SpotPasoDeLaPatria', 'es3'),  -- Surubí pintado
+  ('se56', 'SpotPasoDeLaPatria', 'es6'),  -- Pacú
+  
+  -- Río Limay - Patagonia
+  ('se57', 'SpotRioLimay', 'es17'),       -- Trucha arcoíris
+  ('se58', 'SpotRioLimay', 'es18'),       -- Trucha marrón
+  
+  -- Río Chimehuín
+  ('se59', 'SpotRioChimehuin', 'es17'),   -- Trucha arcoíris
+  ('se60', 'SpotRioChimehuin', 'es18'),   -- Trucha marrón
+  
+  -- Río Traful
+  ('se61', 'SpotRioTraful', 'es17'),      -- Trucha arcoíris
+  ('se62', 'SpotRioTraful', 'es16');      -- Perca criolla 
 
 
 INSERT INTO "SpotTipoPesca" ("id", "idSpot", "idTipoPesca") VALUES
@@ -942,318 +1136,439 @@ INSERT INTO "SpotTipoPesca" ("id", "idSpot", "idTipoPesca") VALUES
   -- Spot Delta
   ('stp7', 'SpotDelta', 'tp1'),    -- Spinning
   ('stp8', 'SpotDelta', 'tp3'),    -- Fondo
-  ('stp9', 'SpotDelta', 'tp4');    -- Flote
+  ('stp9', 'SpotDelta', 'tp4'),    -- Flote
+  
+  -- Puente Gaviotas
+  ('stp10', 'SpotPuenteGaviotas', 'tp4'),  -- Flote
+  ('stp11', 'SpotPuenteGaviotas', 'tp1'),  -- Spinning
+  ('stp12', 'SpotPuenteGaviotas', 'tp3'),  -- Fondo
+  
+  -- Canal Aliviador
+  ('stp13', 'SpotCanalAliviador', 'tp4'),  -- Flote
+  ('stp14', 'SpotCanalAliviador', 'tp10'), -- Carpfishing
+  ('stp15', 'SpotCanalAliviador', 'tp3'),  -- Fondo
+  
+  -- Puente 41
+  ('stp16', 'SpotPuente41', 'tp4'),        -- Flote
+  
+  -- Itá Ibaté
+  ('stp17', 'SpotItaIbate', 'tp1'),        -- Spinning
+  ('stp18', 'SpotItaIbate', 'tp6'),        -- Trolling
+  ('stp19', 'SpotItaIbate', 'tp13'),       -- Pesca al Correntino
+  
+  -- Goya
+  ('stp20', 'SpotGoya', 'tp1'),            -- Spinning
+  ('stp21', 'SpotGoya', 'tp2'),            -- Bait Casting
+  ('stp22', 'SpotGoya', 'tp3'),            -- Fondo
+  
+  -- Paso de la Patria
+  ('stp23', 'SpotPasoDeLaPatria', 'tp1'),  -- Spinning
+  ('stp24', 'SpotPasoDeLaPatria', 'tp6'),  -- Trolling
+  ('stp25', 'SpotPasoDeLaPatria', 'tp13'), -- Pesca al Correntino
+  
+  -- Río Limay
+  ('stp26', 'SpotRioLimay', 'tp5'),        -- Fly Fishing
+  ('stp27', 'SpotRioLimay', 'tp11'),       -- Spinning Patagónico
+  
+  -- Río Chimehuín
+  ('stp28', 'SpotRioChimehuin', 'tp5'),    -- Fly Fishing
+  ('stp29', 'SpotRioChimehuin', 'tp11'),   -- Spinning Patagónico
+  
+  -- Río Traful
+  ('stp30', 'SpotRioTraful', 'tp5'),       -- Fly Fishing
+  ('stp31', 'SpotRioTraful', 'tp11');      -- Spinning Patagónico
 
+
+-- ============================================================
+-- DATOS DE EJEMPLO - RELACIONES SPOT-CARNADA-ESPECIE
+-- ============================================================
 
 INSERT INTO "SpotCarnadaEspecie" ("id", "idSpot", "idEspecie", "idCarnada") VALUES
-  -- SPOT SECRETO - Tararira
+  -- SPOT SECRETO - Tararira común (es1)
   ('sce1', 'SpotSecreto', 'es1', 'c1'),   -- Rana artificial
-  ('sce2', 'SpotSecreto', 'es1', 'c28'),  -- Mojarra viva
-  ('sce3', 'SpotSecreto', 'es1', 'c11'),  -- Paseante
+  ('sce2', 'SpotSecreto', 'es1', 'c26'),  -- Mojarra viva
+  ('sce3', 'SpotSecreto', 'es1', 'c6'),   -- Paseante
   ('sce4', 'SpotSecreto', 'es1', 'c2'),   -- Lombriz siliconada
-  -- SPOT SECRETO - Dorado  
-  ('sce5', 'SpotSecreto', 'es2', 'c10'),  -- Popper
-  ('sce6', 'SpotSecreto', 'es2', 'c14'),  -- Cucharita ondulante
-  ('sce7', 'SpotSecreto', 'es2', 'c28'),  -- Mojarra viva
-  -- SPOT SECRETO - Pejerrey
-  ('sce8', 'SpotSecreto', 'es13', 'c33'), -- Filet de mojarra
-  ('sce9', 'SpotSecreto', 'es13', 'c35'), -- Grillo
   
-  -- SPOT PARANÁ - Dorado
-  ('sce10', 'SpotParana', 'es2', 'c10'),  -- Popper
-  ('sce11', 'SpotParana', 'es2', 'c11'),  -- Paseante  
-  ('sce12', 'SpotParana', 'es2', 'c14'),  -- Cucharita ondulante
-  ('sce13', 'SpotParana', 'es2', 'c28'),  -- Mojarra viva
-  ('sce14', 'SpotParana', 'es2', 'c21'),  -- Carne vacuna
-  -- SPOT PARANÁ - Surubí
-  ('sce15', 'SpotParana', 'es3', 'c29'),  -- Morena viva
-  ('sce16', 'SpotParana', 'es3', 'c21'),  -- Carne vacuna
-  ('sce17', 'SpotParana', 'es3', 'c28'),  -- Mojarra viva
-  ('sce18', 'SpotParana', 'es3', 'c20'),  -- Tripas de pollo
-  -- SPOT PARANÁ - Pacú
-  ('sce19', 'SpotParana', 'es6', 'c31'),  -- Mburucuyá
-  ('sce20', 'SpotParana', 'es6', 'c27'),  -- Maíz hervido
-  ('sce21', 'SpotParana', 'es6', 'c22'),  -- Masa casera
-  -- SPOT PARANÁ - Boga
-  ('sce22', 'SpotParana', 'es9', 'c27'),  -- Maíz hervido
-  ('sce23', 'SpotParana', 'es9', 'c22'),  -- Masa casera
-  ('sce24', 'SpotParana', 'es9', 'c19'),  -- Lombriz común
+  -- SPOT SECRETO - Dorado (es2)
+  ('sce5', 'SpotSecreto', 'es2', 'c5'),   -- Popper
+  ('sce6', 'SpotSecreto', 'es2', 'c8'),   -- Cucharita ondulante
+  ('sce7', 'SpotSecreto', 'es2', 'c26'),  -- Mojarra viva
   
-  -- SPOT DELTA - Tararira
-  ('sce25', 'SpotDelta', 'es1', 'c1'),    -- Rana artificial
-  ('sce26', 'SpotDelta', 'es1', 'c11'),   -- Paseante
-  ('sce27', 'SpotDelta', 'es1', 'c28'),   -- Mojarra viva
-  -- SPOT DELTA - Boga
-  ('sce28', 'SpotDelta', 'es9', 'c27'),   -- Maíz hervido
-  ('sce29', 'SpotDelta', 'es9', 'c32'),   -- Papa hervida
-  ('sce30', 'SpotDelta', 'es9', 'c19'),   -- Lombriz común
-  -- SPOT DELTA - Bagre blanco
+  -- SPOT SECRETO - Pejerrey (es13)
+  ('sce8', 'SpotSecreto', 'es13', 'c29'), -- Filet de mojarra
+  ('sce9', 'SpotSecreto', 'es13', 'c23'), -- Grillo
+  
+  -- SPOT PARANÁ - Dorado (es2)
+  ('sce10', 'SpotParana', 'es2', 'c5'),   -- Popper
+  ('sce11', 'SpotParana', 'es2', 'c6'),   -- Paseante  
+  ('sce12', 'SpotParana', 'es2', 'c8'),   -- Cucharita ondulante
+  ('sce13', 'SpotParana', 'es2', 'c26'),  -- Mojarra viva
+  
+  -- SPOT PARANÁ - Surubí pintado (es3)
+  ('sce14', 'SpotParana', 'es3', 'c27'),  -- Morena viva
+  ('sce15', 'SpotParana', 'es3', 'c26'),  -- Mojarra viva
+  ('sce16', 'SpotParana', 'es3', 'c20'),  -- Tripas de pollo
+  ('sce17', 'SpotParana', 'es3', 'c21'),  -- Hígado de pollo
+  
+  -- SPOT PARANÁ - Pacú (es6)
+  ('sce18', 'SpotParana', 'es6', 'c18'),  -- Mburucuyá
+  ('sce19', 'SpotParana', 'es6', 'c16'),  -- Maíz hervido
+  ('sce20', 'SpotParana', 'es6', 'c17'),  -- Masa casera
+  
+  -- SPOT PARANÁ - Boga (es9)
+  ('sce21', 'SpotParana', 'es9', 'c16'),  -- Maíz hervido
+  ('sce22', 'SpotParana', 'es9', 'c17'),  -- Masa casera
+  ('sce23', 'SpotParana', 'es9', 'c15'),  -- Lombriz común
+  
+  -- SPOT DELTA - Tararira común (es1)
+  ('sce24', 'SpotDelta', 'es1', 'c1'),    -- Rana artificial
+  ('sce25', 'SpotDelta', 'es1', 'c6'),    -- Paseante
+  ('sce26', 'SpotDelta', 'es1', 'c26'),   -- Mojarra viva
+  ('sce27', 'SpotDelta', 'es1', 'c28'),   -- Renacuajo
+  
+  -- SPOT DELTA - Boga (es9)
+  ('sce28', 'SpotDelta', 'es9', 'c16'),   -- Maíz hervido
+  ('sce29', 'SpotDelta', 'es9', 'c19'),   -- Papa hervida
+  ('sce30', 'SpotDelta', 'es9', 'c15'),   -- Lombriz común
+  
+  -- SPOT DELTA - Bagre blanco (es20)
   ('sce31', 'SpotDelta', 'es20', 'c20'),  -- Tripas de pollo
-  ('sce32', 'SpotDelta', 'es20', 'c19'),  -- Lombriz común
-  ('sce33', 'SpotDelta', 'es20', 'c34'),  -- Hígado de pollo
-  -- SPOT DELTA - Mojarra
-  ('sce34', 'SpotDelta', 'es25', 'c19'),  -- Lombriz común
-  ('sce35', 'SpotDelta', 'es25', 'c26'),  -- Pan remojado
-  -- SPOT DELTA - Carpa
-  ('sce36', 'SpotDelta', 'es24', 'c27'),  -- Maíz hervido
-  ('sce37', 'SpotDelta', 'es24', 'c32'),  -- Papa hervida
-  ('sce38', 'SpotDelta', 'es24', 'c22'),  -- Masa casera
+  ('sce32', 'SpotDelta', 'es20', 'c15'),  -- Lombriz común
+  ('sce33', 'SpotDelta', 'es20', 'c21'),  -- Hígado de pollo
+  
+  -- SPOT DELTA - Mojarra (es25)
+  ('sce34', 'SpotDelta', 'es25', 'c15'),  -- Lombriz común
+  ('sce35', 'SpotDelta', 'es25', 'c22'),  -- Pan mojado
+  
+  -- SPOT DELTA - Carpa (es24)
+  ('sce36', 'SpotDelta', 'es24', 'c16'),  -- Maíz hervido
+  ('sce37', 'SpotDelta', 'es24', 'c19'),  -- Papa hervida
+  ('sce38', 'SpotDelta', 'es24', 'c25'),  -- Boilies
+  ('sce39', 'SpotDelta', 'es24', 'c17'),  -- Masa casera
 
-  -- CARNADAS PARA ESPECIES SIN ASIGNAR - SPOT GENERAL
+  -- SPOT GENERAL - ESPECIES RESTANTES
 
-  -- Surubí atigrado (es4) - Similar al pintado
-  ('sce39', 'SpotGeneral', 'es4', 'c29'),  -- Morena viva
-  ('sce40', 'SpotGeneral', 'es4', 'c21'),  -- Carne vacuna
-  ('sce41', 'SpotGeneral', 'es4', 'c28'),  -- Mojarra viva
+  -- Surubí atigrado (es4)
+  ('sce40', 'SpotGeneral', 'es4', 'c27'), -- Morena viva
+  ('sce41', 'SpotGeneral', 'es4', 'c26'), -- Mojarra viva
+  ('sce42', 'SpotGeneral', 'es4', 'c20'), -- Tripas de pollo
 
-  -- Manguruyú (es5) - Carnadas grandes
-  ('sce42', 'SpotGeneral', 'es5', 'c29'),  -- Morena viva
-  ('sce43', 'SpotGeneral', 'es5', 'c21'),  -- Carne vacuna
-  ('sce44', 'SpotGeneral', 'es5', 'c24'),  -- Panceta
+  -- Manguruyú (es5)
+  ('sce43', 'SpotGeneral', 'es5', 'c27'), -- Morena viva
+  ('sce44', 'SpotGeneral', 'es5', 'c26'), -- Mojarra viva
+  ('sce45', 'SpotGeneral', 'es5', 'c21'), -- Hígado de pollo
 
-  -- Pacú reloj (es7) - Frutas y masa
-  ('sce45', 'SpotGeneral', 'es7', 'c31'),  -- Mburucuyá
-  ('sce46', 'SpotGeneral', 'es7', 'c27'),  -- Maíz hervido
-  ('sce47', 'SpotGeneral', 'es7', 'c22'),  -- Masa casera
+  -- Pacú reloj (es7)
+  ('sce46', 'SpotGeneral', 'es7', 'c18'), -- Mburucuyá
+  ('sce47', 'SpotGeneral', 'es7', 'c16'), -- Maíz hervido
+  ('sce48', 'SpotGeneral', 'es7', 'c17'), -- Masa casera
 
-  -- Pacú chato (es8) - Similar al común
-  ('sce48', 'SpotGeneral', 'es8', 'c31'),  -- Mburucuyá
-  ('sce49', 'SpotGeneral', 'es8', 'c27'),  -- Maíz hervido
-  ('sce50', 'SpotGeneral', 'es8', 'c32'),  -- Papa hervida
+  -- Pacú chato (es8)
+  ('sce49', 'SpotGeneral', 'es8', 'c18'), -- Mburucuyá
+  ('sce50', 'SpotGeneral', 'es8', 'c16'), -- Maíz hervido
+  ('sce51', 'SpotGeneral', 'es8', 'c19'), -- Papa hervida
 
-  -- Sábalo (es10) - Masa vegetal
-  ('sce51', 'SpotGeneral', 'es10', 'c22'), -- Masa casera
-  ('sce52', 'SpotGeneral', 'es10', 'c26'), -- Pan remojado
+  -- Sábalo (es10)
+  ('sce52', 'SpotGeneral', 'es10', 'c17'), -- Masa casera
+  ('sce53', 'SpotGeneral', 'es10', 'c22'), -- Pan mojado
 
-  -- Tararira azul (es11) - Como tararira común pero señuelos más grandes
-  ('sce53', 'SpotGeneral', 'es11', 'c11'), -- Paseante
-  ('sce54', 'SpotGeneral', 'es11', 'c28'), -- Mojarra viva
-  ('sce55', 'SpotGeneral', 'es11', 'c10'), -- Popper
+  -- Tararira azul (es11)
+  ('sce54', 'SpotGeneral', 'es11', 'c6'),  -- Paseante
+  ('sce55', 'SpotGeneral', 'es11', 'c26'), -- Mojarra viva
+  ('sce56', 'SpotGeneral', 'es11', 'c5'),  -- Popper
 
-  -- Tararira pintada (es12) - Similar a común
-  ('sce56', 'SpotGeneral', 'es12', 'c1'),  -- Rana artificial
-  ('sce57', 'SpotGeneral', 'es12', 'c28'), -- Mojarra viva
-  ('sce58', 'SpotGeneral', 'es12', 'c11'), -- Paseante
+  -- Tararira pintada (es12)
+  ('sce57', 'SpotGeneral', 'es12', 'c1'),  -- Rana artificial
+  ('sce58', 'SpotGeneral', 'es12', 'c26'), -- Mojarra viva
+  ('sce59', 'SpotGeneral', 'es12', 'c6'),  -- Paseante
 
-  -- Pejerrey patagónico (es14) - Carnadas frías
-  ('sce59', 'SpotGeneral', 'es14', 'c33'), -- Filet de mojarra
-  ('sce60', 'SpotGeneral', 'es14', 'c35'), -- Grillo
-  ('sce61', 'SpotGeneral', 'es14', 'c39'), -- Mosca seca
+  -- Pejerrey patagónico (es14)
+  ('sce60', 'SpotGeneral', 'es14', 'c29'), -- Filet de mojarra
+  ('sce61', 'SpotGeneral', 'es14', 'c23'), -- Grillo
+  ('sce62', 'SpotGeneral', 'es14', 'c11'), -- Mosca seca
 
-  -- Pejerrey fueguino (es15) - Similar al patagónico
-  ('sce62', 'SpotGeneral', 'es15', 'c33'), -- Filet de mojarra
-  ('sce63', 'SpotGeneral', 'es15', 'c47'), -- Mosca mojada chica
+  -- Pejerrey fueguino (es15)
+  ('sce63', 'SpotGeneral', 'es15', 'c29'), -- Filet de mojarra
+  ('sce64', 'SpotGeneral', 'es15', 'c14'), -- Mosca ahogada
 
-  -- Perca criolla (es16) - Como truchas
-  ('sce64', 'SpotGeneral', 'es16', 'c15'), -- Cucharita giratoria
-  ('sce65', 'SpotGeneral', 'es16', 'c38'), -- Streamer
-  ('sce66', 'SpotGeneral', 'es16', 'c19'), -- Lombriz común
+  -- Perca criolla (es16)
+  ('sce65', 'SpotGeneral', 'es16', 'c7'),  -- Cucharita giratoria
+  ('sce66', 'SpotGeneral', 'es16', 'c13'), -- Streamer
+  ('sce67', 'SpotGeneral', 'es16', 'c15'), -- Lombriz común
 
-  -- Trucha arcoíris (es17) - Clásicas de trucha
-  ('sce67', 'SpotGeneral', 'es17', 'c15'), -- Cucharita giratoria
-  ('sce68', 'SpotGeneral', 'es17', 'c39'), -- Mosca seca
-  ('sce69', 'SpotGeneral', 'es17', 'c37'), -- Ninfa
+  -- Trucha arcoíris (es17)
+  ('sce68', 'SpotGeneral', 'es17', 'c7'),  -- Cucharita giratoria
+  ('sce69', 'SpotGeneral', 'es17', 'c11'), -- Mosca seca
+  ('sce70', 'SpotGeneral', 'es17', 'c12'), -- Ninfa
+  ('sce71', 'SpotGeneral', 'es17', 'c24'), -- Isoca
 
-  -- Trucha marrón (es18) - Selectiva
-  ('sce70', 'SpotGeneral', 'es18', 'c39'), -- Mosca seca
-  ('sce71', 'SpotGeneral', 'es18', 'c7'),  -- Minnow blando
-  ('sce72', 'SpotGeneral', 'es18', 'c15'), -- Cucharita giratoria
+  -- Trucha marrón (es18)
+  ('sce72', 'SpotGeneral', 'es18', 'c11'), -- Mosca seca
+  ('sce73', 'SpotGeneral', 'es18', 'c13'), -- Streamer
+  ('sce74', 'SpotGeneral', 'es18', 'c7'),  -- Cucharita giratoria
+  ('sce75', 'SpotGeneral', 'es18', 'c3'),  -- Shad vinilo
 
-  -- Trucha de arroyo (es19) - Moscas pequeñas
-  ('sce73', 'SpotGeneral', 'es19', 'c39'), -- Mosca seca
-  ('sce74', 'SpotGeneral', 'es19', 'c47'), -- Mosca mojada chica
+  -- Trucha de arroyo (es19)
+  ('sce76', 'SpotGeneral', 'es19', 'c11'), -- Mosca seca
+  ('sce77', 'SpotGeneral', 'es19', 'c14'), -- Mosca ahogada
+  ('sce78', 'SpotGeneral', 'es19', 'c24'), -- Isoca
 
-  -- Bagre sapo (es21) - Carnadas fuertes
-  ('sce75', 'SpotGeneral', 'es21', 'c20'), -- Tripas de pollo
-  ('sce76', 'SpotGeneral', 'es21', 'c34'), -- Hígado de pollo
-  ('sce77', 'SpotGeneral', 'es21', 'c19'), -- Lombriz común
+  -- Bagre sapo (es21)
+  ('sce79', 'SpotGeneral', 'es21', 'c20'), -- Tripas de pollo
+  ('sce80', 'SpotGeneral', 'es21', 'c21'), -- Hígado de pollo
+  ('sce81', 'SpotGeneral', 'es21', 'c15'), -- Lombriz común
 
-  -- Armado (es22) - Carnadas robustas
-  ('sce78', 'SpotGeneral', 'es22', 'c20'), -- Tripas de pollo
-  ('sce79', 'SpotGeneral', 'es22', 'c21'), -- Carne vacuna
-  ('sce80', 'SpotGeneral', 'es22', 'c19'), -- Lombriz común
+  -- Armado (es22)
+  ('sce82', 'SpotGeneral', 'es22', 'c20'), -- Tripas de pollo
+  ('sce83', 'SpotGeneral', 'es22', 'c21'), -- Hígado de pollo
+  ('sce84', 'SpotGeneral', 'es22', 'c15'), -- Lombriz común
 
-  -- Patí (es23) - Carnadas grandes
-  ('sce81', 'SpotGeneral', 'es23', 'c28'), -- Mojarra viva
-  ('sce82', 'SpotGeneral', 'es23', 'c20'), -- Tripas de pollo
-  ('sce83', 'SpotGeneral', 'es23', 'c29'), -- Morena viva
+  -- Patí (es23)
+  ('sce85', 'SpotGeneral', 'es23', 'c26'), -- Mojarra viva
+  ('sce86', 'SpotGeneral', 'es23', 'c20'), -- Tripas de pollo
+  ('sce87', 'SpotGeneral', 'es23', 'c27'), -- Morena viva
 
-  -- Anguila criolla (es26) - En barro
-  ('sce84', 'SpotGeneral', 'es26', 'c19'), -- Lombriz común
-  ('sce85', 'SpotGeneral', 'es26', 'c40'), -- Sanguijuela
+  -- Anguila criolla (es26)
+  ('sce88', 'SpotGeneral', 'es26', 'c15'), -- Lombriz común
 
-  -- Pirapitá (es27) - Como doradillo
-  ('sce86', 'SpotGeneral', 'es27', 'c14'), -- Cucharita ondulante
-  ('sce87', 'SpotGeneral', 'es27', 'c28'), -- Mojarra viva
-  ('sce88', 'SpotGeneral', 'es27', 'c10'), -- Popper
+  -- Pirapitá (es27)
+  ('sce89', 'SpotGeneral', 'es27', 'c8'),  -- Cucharita ondulante
+  ('sce90', 'SpotGeneral', 'es27', 'c26'), -- Mojarra viva
+  ('sce91', 'SpotGeneral', 'es27', 'c5'),  -- Popper
 
-  -- Boga lisa (es28) - Vegetarianas
-  ('sce89', 'SpotGeneral', 'es28', 'c27'), -- Maíz hervido
-  ('sce90', 'SpotGeneral', 'es28', 'c31'), -- Mburucuyá
-  ('sce91', 'SpotGeneral', 'es28', 'c19'), -- Lombriz común
+  -- Boga lisa (es28)
+  ('sce92', 'SpotGeneral', 'es28', 'c16'), -- Maíz hervido
+  ('sce93', 'SpotGeneral', 'es28', 'c18'), -- Mburucuyá
+  ('sce94', 'SpotGeneral', 'es28', 'c15'), -- Lombriz común
 
-  -- Palometa (es29) - Agresiva
-  ('sce92', 'SpotGeneral', 'es29', 'c46'), -- Micro jig
-  ('sce93', 'SpotGeneral', 'es29', 'c41'), -- Lombriz cortada
-  ('sce94', 'SpotGeneral', 'es29', 'c28'), -- Mojarra viva
+  -- Palometa (es29)
+  ('sce95', 'SpotGeneral', 'es29', 'c4'),  -- Jig cabeza plomada
+  ('sce96', 'SpotGeneral', 'es29', 'c15'), -- Lombriz común
+  ('sce97', 'SpotGeneral', 'es29', 'c26'), -- Mojarra viva
 
-  -- Chanchita (es31) - Territorial
-  ('sce95', 'SpotGeneral', 'es31', 'c41'), -- Lombriz cortada
-  ('sce96', 'SpotGeneral', 'es31', 'c49'), -- Cascarita
-  ('sce97', 'SpotGeneral', 'es31', 'c46'), -- Micro jig
+  -- Corvina rubia (es30)
+  ('sce98', 'SpotGeneral', 'es30', 'c30'), -- Camarón
+  ('sce99', 'SpotGeneral', 'es30', 'c29'), -- Filet de mojarra
 
-  -- Dientudo (es32) - Combativo pequeño
-  ('sce98', 'SpotGeneral', 'es32', 'c41'), -- Lombriz cortada
-  ('sce99', 'SpotGeneral', 'es32', 'c50'), -- Mini cucharita
-  ('sce100', 'SpotGeneral', 'es32', 'c42'), -- Bolita de pan
+  -- Chanchita (es31)
+  ('sce100', 'SpotGeneral', 'es31', 'c15'), -- Lombriz común
+  ('sce101', 'SpotGeneral', 'es31', 'c4'),  -- Jig cabeza plomada
 
-  -- Madrecita (es33) - Diminuta
-  ('sce101', 'SpotGeneral', 'es33', 'c43'), -- Larva de mosquito
-  ('sce102', 'SpotGeneral', 'es33', 'c42'), -- Bolita de pan
+  -- Dientudo (es32)
+  ('sce102', 'SpotGeneral', 'es32', 'c15'), -- Lombriz común
+  ('sce103', 'SpotGeneral', 'es32', 'c22'), -- Pan mojado
 
-  -- Panzudito (es34) - También diminuto
-  ('sce103', 'SpotGeneral', 'es34', 'c43'), -- Larva de mosquito
-  ('sce104', 'SpotGeneral', 'es34', 'c44'), -- Gusano de humedad
+  -- Madrecita (es33)
+  ('sce104', 'SpotGeneral', 'es33', 'c15'), -- Lombriz común
+  ('sce105', 'SpotGeneral', 'es33', 'c22'), -- Pan mojado
 
-  -- Chanchita rayada (es35) - Más grande
-  ('sce105', 'SpotGeneral', 'es35', 'c19'), -- Lombriz común
-  ('sce106', 'SpotGeneral', 'es35', 'c49'), -- Cascarita
-  ('sce107', 'SpotGeneral', 'es35', 'c46'), -- Micro jig
+  -- Panzudito (es34)
+  ('sce106', 'SpotGeneral', 'es34', 'c15'), -- Lombriz común
+  ('sce107', 'SpotGeneral', 'es34', 'c22'), -- Pan mojado
 
-  -- Bagre negro (es36) - Arroyo
-  ('sce108', 'SpotGeneral', 'es36', 'c19'), -- Lombriz común
-  ('sce109', 'SpotGeneral', 'es36', 'c44'), -- Gusano de humedad
+  -- Chanchita rayada (es35)
+  ('sce108', 'SpotGeneral', 'es35', 'c15'), -- Lombriz común
+  ('sce109', 'SpotGeneral', 'es35', 'c4'),  -- Jig cabeza plomada
 
-  -- Castañeta (es37) - Resistente
-  ('sce110', 'SpotGeneral', 'es37', 'c19'), -- Lombriz común
-  ('sce111', 'SpotGeneral', 'es37', 'c22'), -- Masa casera
-  ('sce112', 'SpotGeneral', 'es37', 'c41'), -- Lombriz cortada
+  -- Bagre negro (es36)
+  ('sce110', 'SpotGeneral', 'es36', 'c15'), -- Lombriz común
+  ('sce111', 'SpotGeneral', 'es36', 'c20'), -- Tripas de pollo
 
-  -- Mojarra cola roja (es38) - Cardumen
-  ('sce113', 'SpotGeneral', 'es38', 'c41'), -- Lombriz cortada
-  ('sce114', 'SpotGeneral', 'es38', 'c42'), -- Bolita de pan
+  -- Castañeta (es37)
+  ('sce112', 'SpotGeneral', 'es37', 'c15'), -- Lombriz común
+  ('sce113', 'SpotGeneral', 'es37', 'c17'), -- Masa casera
 
-  -- Puyén grande (es39) - Patagónico diminuto
-  ('sce115', 'SpotGeneral', 'es39', 'c66'), -- Ninfa artificial
-  ('sce116', 'SpotGeneral', 'es39', 'c51'), -- Isoca
-  ('sce117', 'SpotGeneral', 'es39', 'c69'), -- Hormiga voladora
+  -- Mojarra cola roja (es38)
+  ('sce114', 'SpotGeneral', 'es38', 'c15'), -- Lombriz común
+  ('sce115', 'SpotGeneral', 'es38', 'c22'), -- Pan mojado
 
-  -- Perca patagónica (es40) - Lagos fríos
-  ('sce118', 'SpotGeneral', 'es40', 'c67'), -- Spinner Patagónico
-  ('sce119', 'SpotGeneral', 'es40', 'c73'), -- Streamer artesanal
-  ('sce120', 'SpotGeneral', 'es40', 'c28'), -- Mojarra viva
+  -- Puyén grande (es39)
+  ('sce116', 'SpotGeneral', 'es39', 'c12'), -- Ninfa
+  ('sce117', 'SpotGeneral', 'es39', 'c24'), -- Isoca
+  ('sce118', 'SpotGeneral', 'es39', 'c23'), -- Grillo
 
-  -- Bagre blanco del sur (es41) - Protegido
-  ('sce121', 'SpotGeneral', 'es41', 'c19'); -- Lombriz común
+  -- Perca patagónica (es40)
+  ('sce119', 'SpotGeneral', 'es40', 'c7'),  -- Cucharita giratoria
+  ('sce120', 'SpotGeneral', 'es40', 'c13'), -- Streamer
+  ('sce121', 'SpotGeneral', 'es40', 'c4'),  -- Jig cabeza plomada
 
--- DATOS DE EJEMPLO DE CAPTURAS
+  -- Bagre blanco del sur (es41)
+  ('sce122', 'SpotGeneral', 'es41', 'c15'); -- Lombriz común
+
+-- ============================================================
+-- DATOS DE EJEMPLO - CAPTURAS NOVIEMBRE 2025 (25 CAPTURAS REALISTAS)
+-- ============================================================
+
 INSERT INTO "Captura" (
-  "id", "idUsuario", "especieId", "fecha", "ubicacion", "peso", "longitud", 
-  "carnada", "tipoPesca", "foto", "notas", "clima", "horaCaptura"
+  "id", "idUsuario", "especieId", "fecha", "ubicacion", "peso", "tamanio", 
+  "carnada", "tipoPesca", "foto", "notas", "clima", "horaCaptura", "spotId", "latitud", "longitud"
 ) VALUES
--- Capturas de Carlos Tarucha (usuario1)
-('cap001', 'usuario1', 'es2', '2024-03-15', 'Río Paraná - Puerto Iguazú', 8.50, 75.0, 
- 'Popper dorado', 'Spinning', 'uploads/dorado_cap_001.jpg', 
- 'Excelente pelea de 20 minutos. El dorado saltó 6 veces fuera del agua. Condiciones perfectas al amanecer.',
- 'Despejado, sin viento', '06:30:00'),
 
-('cap002', 'usuario1', 'es1', '2024-03-20', 'Laguna Los Patos - San Pedro', 2.80, 48.0,
- 'Rana artificial verde', 'Spinning', 'uploads/tararira_cap_002.jpg',
- 'Tararira muy agresiva, atacó la rana en la primera pasada. Perfecta para la parrilla.',
- 'Nublado, brisa suave', '18:45:00'),
+-- ============================================================
+-- SPOT SECRETO - CARLOS (usuario1) - 3 TARARIRAS
+-- Ubicación: -35.75352487481563, -58.500998126994794
+-- ============================================================
+('cap001', 'usuario1', 'es1', '2025-11-03', 'Desembocadura del Arrollito - Río Salado', 3.20, 52.0,
+ 'Filet de mojarra', 'Bait Casting', 'tararuchini.jpg',
+ 'Tararira hermosa al atardecer. Pesca con flote y filet de mojarra cerca de los juncales. Picó suave y luego estalló la pelea. Agua tranquila ideal para la técnica.',
+ 'Parcialmente nublado, viento norte suave', '18:45:00', 'SpotSecreto', -35.75352487, -58.50099813),
 
-('cap003', 'usuario1', 'es13', '2024-02-28', 'Laguna de Chascomús', 0.850, 32.0,
- 'Filet de mojarra', 'Pesca de Flote', 'uploads/pejerrey_cap_003.jpg',
- 'Día ideal para pejerrey. Cardumen muy activo en la mañana. Capturé 12 ejemplares.',
- 'Soleado, calmo', '09:15:00'),
+('cap002', 'usuario1', 'es1', '2025-11-05', 'Desembocadura del Arrollito - Río Salado', 2.80, 48.0,
+ 'Filet de dientudo', 'Bait Casting', 'uploads/tararira_002.jpg',
+ 'Segunda salida al spot secreto. Esta vez con filet de dientudo al mediodía. Tararira activa, atacó apenas cayó la carnada. Técnica baitcasting con señuelo blando.',
+ 'Soleado, calmo', '12:30:00', 'SpotSecreto', -35.75352487, -58.50099813),
 
-('cap004', 'usuario1', 'es3', '2024-03-10', 'Río Uruguay - Gualeguaychú', 15.20, 95.0,
- 'Morena viva grande', 'Pesca de Fondo', 'uploads/surubi_cap_004.jpg',
- 'Surubí nocturno de gran porte. Pesca desde la costa con equipo pesado. Pelea de 45 minutos.',
- 'Noche despejada, sin luna', '23:30:00'),
+('cap003', 'usuario1', 'es1', '2025-11-08', 'Desembocadura del Arrollito - Río Salado', 4.10, 57.0,
+ 'Mojarra viva', 'Pesca de Flote', 'uploads/tararira_003.jpg',
+ '¡La más grande del spot! Pesca con flote y mojarra viva de 10 cm. Esperé 40 minutos pero valió la pena. Pelea épica de 15 minutos. Este spot nunca falla para tarariras.',
+ 'Nublado, fresco', '17:15:00', 'SpotSecreto', -35.75352487, -58.50099813),
 
-('cap005', 'usuario1', 'es6', '2024-03-25', 'Río Paraná - Rosario', 4.10, 55.0,
- 'Mburucuyá maduro', 'Pesca de Fondo', 'uploads/pacu_cap_005.jpg',
- 'Pacú capturado con fruta en bajante. Muy combativo para su tamaño. Excelente carne.',
- 'Parcialmente nublado', '16:20:00'),
+-- ============================================================
+-- RÍO SALADO - PUENTE GAVIOTAS - CARLOS (usuario1) - 3 CAPTURAS
+-- Ubicación: -35.76542656433006, -58.21856962523311
+-- ============================================================
+('cap004', 'usuario1', 'es13', '2025-11-01', 'Puente de las Gaviotas - Río Salado', 0.920, 34.0,
+ 'Filet de mojarra', 'Pesca de Flote', 'uploads/pejerrey_004.jpg',
+ 'Primer pejerrey del mes. Mañana soleada perfecta. Cardumen activo, capturé 8 ejemplares. Este fue el más grande. Línea fina 0,18 mm con boya chica.',
+ 'Soleado, sin viento', '09:20:00', 'SpotPuenteGaviotas', -35.76542656, -58.21856963),
 
--- Capturas de Lucía Señuelera (usuario2)
-('cap006', 'usuario2', 'es17', '2024-01-18', 'Río Limay - Bariloche', 3.40, 52.0,
- 'Cucharita giratoria #3', 'Spinning', 'uploads/trucha_cap_006.jpg',
- 'Trucha arcoíris en perfecto estado. Agua cristalina a 12°C. Liberada después de la foto.',
- 'Fresco, parcialmente nublado', '07:00:00'),
+('cap005', 'usuario1', 'es20', '2025-11-02', 'Puente de las Gaviotas - Río Salado', 1.45, 40.0,
+ 'Lombriz común', 'Pesca de Fondo', 'uploads/bagre_005.jpg',
+ 'Bagre nocturno bajo el puente. Pesca de fondo con lombriz y plomada de 60 gr. Picó a las 11 PM, muy combativo. Zona profunda del canal.',
+ 'Noche despejada, fresca', '23:00:00', 'SpotPuenteGaviotas', -35.76542656, -58.21856963),
 
-('cap007', 'usuario2', 'es18', '2024-01-22', 'Río Traful - Villa Traful', 5.80, 68.0,
- 'Mosca seca #14', 'Mosca (Fly Fishing)', 'uploads/trucha_marron_cap_007.jpg',
- 'Trucha marrón selectiva. Tardé 3 horas en encontrar la mosca correcta. Vale la pena la paciencia.',
- 'Nublado, ideal para moscas', '19:30:00'),
+('cap006', 'usuario1', 'es1', '2025-11-04', 'Puente de las Gaviotas - Río Salado', 2.50, 46.0,
+ 'Rana artificial', 'Spinning', 'uploads/tararira_006.jpg',
+ 'Tararira con señuelo! Primer lanzamiento al amanecer con rana artificial verde. Atacó explosivamente cerca de la vegetación. Spinning ligero 2 m.',
+ 'Amanecer despejado', '06:45:00', 'SpotPuenteGaviotas', -35.76542656, -58.21856963),
 
-('cap008', 'usuario2', 'es2', '2024-02-14', 'Río Paraná - Delta del Tigre', 6.20, 68.0,
- 'Paseante plateado', 'Bait Casting', 'uploads/dorado_cap_008.jpg',
- 'Dorado del Delta, más oscuro que los de río arriba. Ataque explosivo en canal profundo.',
- 'Caluroso, húmedo', '17:45:00'),
+-- ============================================================
+-- RÍO SALADO - CANAL ALIVIADOR - CARLOS (usuario1) - 3 CAPTURAS
+-- Ubicación: -35.750086754706095, -58.09736829811158
+-- ============================================================
+('cap007', 'usuario1', 'es13', '2025-11-06', 'Canal Aliviador - Río Salado', 1.10, 37.0,
+ 'Filet de mojarra', 'Pesca de Flote', 'uploads/pejerrey_007.jpg',
+ 'Canal tranquilo, agua clara. Pejerrey selectivo, probé 3 carnadas antes de acertar. Tarde nublada ideal. Técnica clásica con boya corrediza.',
+ 'Nublado, viento este suave', '16:30:00', 'SpotCanalAliviador', -35.75008675, -58.09736830),
 
-('cap009', 'usuario2', 'es9', '2024-03-08', 'Río Paraná - Puerto Gaboto', 1.90, 42.0,
- 'Maíz hervido', 'Pesca de Flote', 'uploads/boga_cap_009.jpg',
- 'Boga muy combativa en equipo liviano. Cardumen numeroso alimentándose activamente.',
- 'Viento sur moderado', '14:30:00'),
+('cap008', 'usuario1', 'es24', '2025-11-07', 'Canal Aliviador - Río Salado', 5.80, 65.0,
+ 'Maíz hervido', 'Carpfishing', 'uploads/carpa_008.jpg',
+ 'Carpa grande después de 3 horas de cebado. Maíz fermentado en hair rig. Pelea de 25 minutos, múltiples corridas. Equipo al límite. Vale la pena la espera.',
+ 'Caluroso, tarde pesada', '19:45:00', 'SpotCanalAliviador', -35.75008675, -58.09736830),
 
-('cap010', 'usuario2', 'es24', '2024-02-20', 'Laguna San Roque - Córdoba', 7.80, 72.0,
- 'Boilies de frutos rojos', 'Pesca con Cebado', 'uploads/carpa_cap_010.jpg',
- 'Carpa gigante después de 6 horas de cebado. Pelea épica de una hora. Equipo al límite.',
- 'Calmo, atardecer dorado', '20:15:00'),
+('cap009', 'usuario1', 'es9', '2025-11-09', 'Canal Aliviador - Río Salado', 1.85, 41.0,
+ 'Maíz hervido', 'Pesca de Fondo', 'uploads/boga_009.jpg',
+ 'Boga muy combativa en equipo liviano. Técnica variada con múltiples anzuelos. Cardumen alimentándose activamente en el fondo. Capturé 5 ejemplares.',
+ 'Soleado, calmo', '14:00:00', 'SpotCanalAliviador', -35.75008675, -58.09736830),
 
--- Capturas adicionales para mostrar diversidad
-('cap011', 'usuario1', 'es11', '2024-03-18', 'Río Paraná - Paso de la Patria', 7.50, 72.0,
- 'Paseante gigante', 'Bait Casting', 'uploads/tararira_azul_cap_011.jpg',
- 'Tararira azul de gran tamaño. Muy agresiva, destrozó dos señuelos antes de este.',
- 'Tormentoso, pre-tormenta', '18:00:00'),
+-- ============================================================
+-- RÍO SALADO - PUENTE 41 - CARLOS (usuario1) - 3 CAPTURAS PEJERREY
+-- Ubicación: -35.73658874176168, -57.98199742419953
+-- ============================================================
+('cap010', 'usuario1', 'es13', '2025-11-10', 'Puente de la Ruta 41 - Río Salado', 0.850, 32.0,
+ 'Grillo', 'Pesca de Flote', 'uploads/pejerrey_010.jpg',
+ 'Spot pejerrerero clásico. Mañana fría perfecta. Grillo vivo irresistible. Picada suave, hay que estar atento. Línea 0,16 mm, anzuelo N°10.',
+ 'Frío, despejado', '08:30:00', 'SpotPuente41', -35.73658874, -57.98199742),
 
-('cap012', 'usuario2', 'es20', '2024-03-12', 'Río de la Plata - Tigre', 1.20, 38.0,
- 'Lombriz de mar', 'Pesca de Fondo', 'uploads/bagre_cap_012.jpg',
- 'Bagre blanco nocturno. Pesca desde muelle, muy común en esta zona del río.',
- 'Noche húmeda', '22:00:00'),
+('cap011', 'usuario1', 'es13', '2025-11-10', 'Puente de la Ruta 41 - Río Salado', 1.05, 36.0,
+ 'Filet de mojarra', 'Pesca de Flote', 'uploads/pejerrey_011.jpg',
+ 'Segunda captura de la mañana. Cambié a filet y siguieron picando. Cardumen grande bajo el puente. Este es un spot que nunca falla para pejerrey.',
+ 'Frío, despejado', '10:15:00', 'SpotPuente41', -35.73658874, -57.98199742),
 
-('cap013', 'usuario1', 'es25', '2024-03-22', 'Arroyo Pergamino', 0.15, 12.0,
- 'Lombriz cortada', 'Mojarrero', 'uploads/mojarra_cap_013.jpg',
- 'Sesión de mojarrero en arroyo cristalino. Capturé 30 ejemplares con equipo ultra liviano.',
- 'Fresco, ideal', '10:30:00'),
+('cap012', 'usuario1', 'es13', '2025-11-10', 'Puente de la Ruta 41 - Río Salado', 0.780, 31.0,
+ 'Masa casera', 'Pesca de Flote', 'uploads/pejerrey_012.jpg',
+ 'Tercero del día. Probé con masa para variar y funcionó. Total de la jornada: 12 pejerreyes. Excelente día de pesca. Spot súper productivo.',
+ 'Frío, despejado', '11:45:00', 'SpotPuente41', -35.73658874, -57.98199742),
 
-('cap014', 'usuario2', 'es16', '2024-01-25', 'Lago Nahuel Huapi - Bariloche', 2.10, 35.0,
- 'Streamer zonker', 'Mosca (Fly Fishing)', 'uploads/perca_cap_014.jpg',
- 'Perca criolla en aguas profundas. Excelente pelea y sabor. Técnica de hundimiento.',
- 'Frío, viento norte', '15:45:00'),
+-- ============================================================
+-- RÍO PARANÁ - ITÁ IBATÉ - LUCÍA (usuario2) - 3 CAPTURAS
+-- Ubicación: -31.348611068177423, -59.20694076805208
+-- ============================================================
+('cap013', 'usuario2', 'es2', '2025-11-01', 'Itá Ibaté - Río Paraná', 7.20, 72.0,
+ 'Popper', 'Spinning', 'uploads/dorado_013.jpg',
+ 'Dorado explosivo al amanecer! Popper amarillo con rojo, trabajado agresivamente. Saltó 4 veces fuera del agua. Corriente rápida, pelea de 18 minutos. Pura adrenalina.',
+ 'Amanecer despejado, calmo', '06:15:00', 'SpotItaIbate', -31.34861107, -59.20694077),
 
-('cap015', 'usuario1', 'es4', '2024-03-05', 'Río Uruguay - Concordia', 12.30, 85.0,
- 'Mojarra viva 20cm', 'Pesca Nocturna Especializada', 'uploads/surubi_atigrado_cap_015.jpg',
- 'Surubí atigrado nocturno. Equipo pesado necesario. Pelea brutal de 35 minutos en correntada.',
- 'Noche cerrada, húmeda', '01:15:00'),
+('cap014', 'usuario2', 'es3', '2025-11-02', 'Itá Ibaté - Río Paraná', 12.50, 88.0,
+ 'Morena viva', 'Pesca Nocturna de Bagres', 'uploads/surubi_014.jpg',
+ 'Surubí nocturno en pozón profundo. Morena viva de 25 cm en anzuelo 6/0. Picó a la medianoche. Pelea brutal de 35 minutos. Equipo pesado necesario. ¡Bestia!',
+ 'Noche cerrada, húmeda', '00:30:00', 'SpotItaIbate', -31.34861107, -59.20694077),
 
--- Capturas estacionales y técnicas especiales
-('cap016', 'usuario2', 'es19', '2024-01-10', 'Arroyo Pescado - El Bolsón', 0.680, 28.0,
- 'Mosca seca hormiga #16', 'Mosca (Fly Fishing)', 'uploads/trucha_arroyo_cap_016.jpg',
- 'Trucha de arroyo en agua cristalina de montaña. La más bella de todas. Liberada inmediatamente.',
- 'Perfecto, sin viento', '11:00:00'),
+('cap015', 'usuario2', 'es6', '2025-11-03', 'Itá Ibaté - Río Paraná', 3.80, 54.0,
+ 'Mburucuyá', 'Pesca de Fondo', 'uploads/pacu_015.jpg',
+ 'Pacú con fruta! Mburucuyá maduro en remanso. Tarde tranquila, picó después de 1 hora. Muy combativo, corridas largas. Carne excelente para la parrilla.',
+ 'Caluroso, parcialmente nublado', '17:20:00', 'SpotItaIbate', -31.34861107, -59.20694077),
 
-('cap017', 'usuario1', 'es32', '2024-03-28', 'Arroyo Los Ingleses - Tandil', 0.08, 8.0,
- 'Mini cucharita dorada', 'Spinning Ultra Liviano', 'uploads/dientudo_cap_017.jpg',
- 'Dientudo combativo en arroyo serrano. Equipo ultra liviano, anzuelo N°16. Muy deportivo.',
- 'Soleado, brisa suave', '16:00:00'),
+-- ============================================================
+-- RÍO PARANÁ - GOYA - LUCÍA (usuario2) - 3 CAPTURAS
+-- Ubicación: -29.139437530308674, -59.26544244843749
+-- ============================================================
+('cap016', 'usuario2', 'es2', '2025-11-04', 'Goya - Río Paraná', 6.50, 68.0,
+ 'Cucharita ondulante', 'Bait Casting', 'uploads/dorado_016.jpg',
+ 'Dorado con cuchara plateada N°4. Lanzamiento largo a correntada. Ataque violento, típico de esta zona. Goya nunca decepciona para dorados. Spinning medio.',
+ 'Soleado, viento norte', '07:30:00', 'SpotGoya', -29.13943753, -59.26544245),
 
-('cap018', 'usuario2', 'es14', '2024-12-15', 'Lago Traful - Villa Traful', 1.10, 35.0,
- 'Ninfa patagónica', 'Fly Fishing Ninfeo', 'uploads/pejerrey_patagonico_cap_018.jpg',
- 'Pejerrey patagónico en lago frío. Técnica específica con mosca hundida. Agua a 8°C.',
- 'Frío intenso, calmo', '13:30:00'),
+('cap017', 'usuario2', 'es9', '2025-11-05', 'Goya - Río Paraná', 2.10, 43.0,
+ 'Maíz hervido', 'Variada', 'uploads/boga_017.jpg',
+ 'Boga en técnica variada. 4 anzuelos con maíz. Corriente media, muy combativa. Capturé 6 bogas en 2 horas. Esta fue la más grande. Excelente para carnada.',
+ 'Parcialmente nublado', '15:00:00', 'SpotGoya', -29.13943753, -59.26544245),
 
-('cap019', 'usuario1', 'es29', '2024-03-30', 'Arroyo Dulce - Villa María', 0.45, 18.0,
- 'Micro jig verde', 'Pesca a la Cueva', 'uploads/palometa_cap_019.jpg',
- 'Palometa territorial bajo tronco caído. Lanzamiento preciso necesario. Muy agresiva.',
- 'Cálido, sin viento', '17:30:00'),
+('cap018', 'usuario2', 'es1', '2025-11-06', 'Goya - Río Paraná', 3.50, 54.0,
+ 'Paseante', 'Spinning', 'uploads/tararira_018.jpg',
+ 'Tararira grande del Paraná. Paseante blanco trabajado en vegetación flotante. Más oscura que las del Salado. Ataque explosivo típico. ¡Qué pelea!',
+ 'Nublado, fresco', '18:00:00', 'SpotGoya', -29.13943753, -59.26544245),
 
-('cap020', 'usuario2', 'es39', '2024-01-20', 'Lago Gutiérrez - Bariloche', 0.18, 22.0,
- 'Ninfa microscópica', 'Pesca en Espejos', 'uploads/puyen_cap_020.jpg',
- 'Puyén grande endémico patagónico. Especie nativa muy especial. Técnica ultra fina requerida.',
- 'Frío, lago como espejo', '14:00:00');
+-- ============================================================
+-- RÍO PARANÁ - PASO DE LA PATRIA - LUCÍA (usuario2) - 3 CAPTURAS
+-- Ubicación: -27.311481568694984, -59.11302697011719
+-- ============================================================
+('cap019', 'usuario2', 'es2', '2025-11-07', 'Paso de la Patria - Río Paraná', 9.80, 82.0,
+ 'Popper', 'Spinning', 'uploads/dorado_019.jpg',
+ 'Dorado trofeo en la capital del dorado! Popper de 15 cm trabajado explosivo. Saltó 7 veces. Pelea inolvidable de 28 minutos. La Meca del doradista hecha realidad.',
+ 'Soleado, caluroso', '06:00:00', 'SpotPasoDeLaPatria', -27.31148157, -59.11302697),
+
+('cap020', 'usuario2', 'es3', '2025-11-08', 'Paso de la Patria - Río Paraná', 14.20, 94.0,
+ 'Morena viva', 'Pesca al Correntino', 'uploads/surubi_020.jpg',
+ 'Surubí monstruoso! La captura de mi vida. Morena de 30 cm en deriva natural. Picó suave, luego el infierno. 45 minutos de pelea pura. Línea 0,50 al límite. ¡Increíble!',
+ 'Noche cálida, luna llena', '22:00:00', 'SpotPasoDeLaPatria', -27.31148157, -59.11302697),
+
+('cap021', 'usuario2', 'es6', '2025-11-09', 'Paso de la Patria - Río Paraná', 4.50, 58.0,
+ 'Maíz hervido', 'Pesca de Fondo', 'uploads/pacu_021.jpg',
+ 'Pacú en bajante. Maíz hervido con anís. Remanso tranquilo cerca de árboles. Muy combativo para su tamaño. Paso de la Patria es el paraíso de la pesca.',
+ 'Caluroso, atardecer', '19:30:00', 'SpotPasoDeLaPatria', -27.31148157, -59.11302697),
+
+-- ============================================================
+-- SUR - RÍO LIMAY - LUCÍA (usuario2) - 2 CAPTURAS
+-- Ubicación: -40.96826103651293, -71.34124481924113
+-- ============================================================
+('cap022', 'usuario2', 'es17', '2025-11-02', 'Río Limay - Bariloche', 2.80, 48.0,
+ 'Cucharita giratoria', 'Spinning Patagónico', 'uploads/trucha_arcoiris_022.jpg',
+ 'Trucha arcoíris hermosa del Limay. Cucharita plateada N°3 en corriente rápida. Agua cristalina a 10°C. Colores intensos típicos del río. Liberada después de foto.',
+ 'Frío, parcialmente nublado', '08:45:00', 'SpotRioLimay', -40.96826104, -71.34124482),
+
+('cap023', 'usuario2', 'es18', '2025-11-03', 'Río Limay - Bariloche', 3.90, 56.0,
+ 'Mosca seca', 'Fly Fishing (Mosca)', 'uploads/trucha_marron_023.jpg',
+ 'Trucha marrón selectiva. Mosca seca #14 en eclosión de efímeras. Tardé 2 horas en conseguir la presentación perfecta. La espera valió la pena. ¡Qué hermosura!',
+ 'Fresco, despejado', '19:15:00', 'SpotRioLimay', -40.96826104, -71.34124482),
+
+-- ============================================================
+-- SUR - RÍO CHIMEHUÍN - LUCÍA (usuario2) - 1 CAPTURA
+-- Ubicación: -39.87997896458389, -71.0633587292683
+-- ============================================================
+('cap024', 'usuario2', 'es17', '2025-11-05', 'Río Chimehuín - Junín de los Andes', 4.20, 62.0,
+ 'Ninfa', 'Fly Fishing (Mosca)', 'uploads/trucha_arcoiris_024.jpg',
+ '¡Trucha trofeo del Chimehuín! Ninfa con lastre en pozón profundo. Río mítico, no decepciona. Pelea de 20 minutos. Ejemplar perfecto en excelente estado. Devuelta al agua.',
+ 'Frío intenso, despejado', '11:30:00', 'SpotRioChimehuin', -39.87997896, -71.06335873),
+
+-- ============================================================
+-- SUR - RÍO TRAFUL - LUCÍA (usuario2) - 1 CAPTURA
+-- Ubicación: -40.66268370204022, -71.29338522436461
+-- ============================================================
+('cap025', 'usuario2', 'es16', '2025-11-07', 'Río Traful - Villa Traful', 2.40, 38.0,
+ 'Streamer', 'Fly Fishing (Mosca)', 'uploads/perca_025.jpg',
+ 'Perca criolla del Traful. Streamer zonker trabajado cerca del fondo. Agua profunda y fría. Menos conocida que las truchas pero igual de combativa. Hermosa captura nativa.',
+ 'Frío, viento oeste', '16:00:00', 'SpotRioTraful', -40.66268370, -71.29338522);
 
 select * from "Usuario";
 
@@ -1278,24 +1593,26 @@ ORDER BY tabla;
 
 select * from "Usuario";
 
-ALTER TABLE "Captura" 
-ADD COLUMN "spotId" VARCHAR(255),
-ADD COLUMN "latitud" DECIMAL(10,8),
-ADD COLUMN "longitud" DECIMAL(11,8),
-ADD COLUMN "tamanio" DECIMAL(6,2);
+-- Las siguientes líneas eran para agregar columnas en pruebas anteriores
+-- Ahora las columnas spotId, latitud, longitud ya están incluidas en los INSERTs
+-- y tamanio fue reemplazado por longitud
 
+-- ALTER TABLE "Captura" 
+-- ADD COLUMN "spotId" VARCHAR(255),
+-- ADD COLUMN "latitud" DECIMAL(10,8),
+-- ADD COLUMN "longitud" DECIMAL(11,8),
+-- ADD COLUMN "tamanio" DECIMAL(6,2);
 
-ALTER TABLE "Captura"
-ADD CONSTRAINT "fk_captura_spot" 
-FOREIGN KEY ("spotId") REFERENCES "Spot"("id") ON DELETE SET NULL;
+-- ALTER TABLE "Captura"
+-- ADD CONSTRAINT "fk_captura_spot" 
+-- FOREIGN KEY ("spotId") REFERENCES "Spot"("id") ON DELETE SET NULL;
 
+-- CREATE INDEX idx_captura_spotId ON "Captura"("spotId");
+-- CREATE INDEX idx_captura_peso ON "Captura"("peso" DESC NULLS LAST);
+-- CREATE INDEX idx_captura_tamanio ON "Captura"("tamanio" DESC NULLS LAST);
 
-CREATE INDEX idx_captura_spotId ON "Captura"("spotId");
-CREATE INDEX idx_captura_peso ON "Captura"("peso" DESC NULLS LAST);
-CREATE INDEX idx_captura_tamanio ON "Captura"("tamanio" DESC NULLS LAST);
-
-SELECT column_name, data_type 
-FROM information_schema.columns 
-WHERE table_schema = 'public' 
-  AND table_name = 'Captura' 
-  AND column_name IN ('spotId', 'latitud', 'longitud', 'tamanio');
+-- SELECT column_name, data_type 
+-- FROM information_schema.columns 
+-- WHERE table_schema = 'public' 
+--   AND table_name = 'Captura' 
+--   AND column_name IN ('spotId', 'latitud', 'longitud', 'tamanio');

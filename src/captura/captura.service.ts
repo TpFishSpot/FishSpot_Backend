@@ -273,7 +273,8 @@ async create(
     const inicioMes = new Date(ahora.getFullYear(), ahora.getMonth(), 1);
     const finMes = new Date(ahora.getFullYear(), ahora.getMonth() + 1, 0, 23, 59, 59);
 
-    const capturasMes = await this.capturaRepository.findAll();
+    // Usar findAllWithSpots para incluir la relación con Spot
+    const capturasMes = await this.capturaRepository.findAllWithSpots();
     const capturasFiltradas = capturasMes.filter(c => {
       const fecha = new Date(c.fecha);
       return fecha >= inicioMes && fecha <= finMes && c.foto;
