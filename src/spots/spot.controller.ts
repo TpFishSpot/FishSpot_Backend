@@ -56,6 +56,7 @@ export class SpotController {
     @Query('idUsuario') idUsuario?: string,
     @Query('page') page = '1',
     @Query('estado') estado?: string,
+    @Query('limite') limite?: number,
   ) {
     const pageNumber = parseInt(page, 10);
 
@@ -63,6 +64,7 @@ export class SpotController {
       idUsuario,
       estado,
       page: pageNumber,
+      limite: limite,
     });
   }
 
@@ -122,6 +124,7 @@ export class SpotController {
     }
     if (typeof rawBody.especies === 'string') rawBody.especies = JSON.parse(rawBody.especies);
     if (typeof rawBody.carnadas === 'string') rawBody.carnadas = JSON.parse(rawBody.carnadas);
+    if (typeof rawBody.tiposPesca === 'string') rawBody.tiposPesca = JSON.parse(rawBody.tiposPesca);
 
     rawBody.idUsuario = request.user.uid;
     rawBody.idUsuarioActualizo = request.user.uid;

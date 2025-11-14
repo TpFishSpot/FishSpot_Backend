@@ -116,12 +116,14 @@ export class SpotService {
     idUsuario,
     estado,
     page,
+    limite,
   }: {
     idUsuario?: string;
     estado?: string; 
     page: number;
+    limite?: number 
   }) {
-    const limit = 4;
+    const limit = limite ? limite : 4;
     const offset = (page - 1) * limit;
     return await this.spotRepository.findAllPaginado({
       idUsuario,
